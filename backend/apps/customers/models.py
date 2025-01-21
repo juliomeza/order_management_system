@@ -1,74 +1,175 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinLengthValidator
+from apps.core.models import Status
 
-
-class Status(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    description = models.TextField(blank=True, null=True)
+class Role(models.Model):
+    """
+    Define user access levels and capabilities
+    """
+    roleName = models.CharField(max_length=50, unique=True)
+    permissions = models.JSONField(
+        help_text="JSON field storing permitted actions"
+    )
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        related_name='roles_created',
+        null=True
+    )
+    modified_by = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        related_name='roles_modified',
+        null=True
+    )
 
+    def __str__(self):
+        return self.roleName
 
-class Addresses(models.Model):
-    street = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    zip_code = models.CharField(max_length=20)
+class Customer(models.Model):
+    """
+    Root entity for multi-tenant structure
+    """
+    OUTPUT_FORMAT_CHOICES = [
+        ('CSV', 'CSV'),
+        ('JSON', 'JSON'),
+    ]
+
+    name = models.CharField(max_length=100)
+    lookupCode = models.CharField(
+        max_length=50,
+        unique=True,
+        validators=[MinLengthValidator(2)]
+    )
+    status = models.ForeignKey(
+        Status,
+        on_delete=models.PROTECT,
+        related_name='customers'
+    )
+    # addressID will be added when we create the Logistics app
+    address = models.ForeignKey(
+        'logistics.Address',
+        on_delete=models.PROTECT,
+        related_name='customers',
+        null=True
+    )
+    outputFormat = models.CharField(
+        max_length=4,
+        choices=OUTPUT_FORMAT_CHOICES,
+        default='JSON'
+    )
+    notes = models.TextField(blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        related_name='customers_created',
+        null=True
+    )
+    modified_by = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        related_name='customers_modified',
+        null=True
+    )
 
+    def __str__(self):
+        return f"{self.name} ({self.lookupCode})"
+
+class Project(models.Model):
+    """
+    Organize customer operations
+    """
+    name = models.CharField(max_length=100)
+    lookupCode = models.CharField(
+        max_length=50,
+        unique=True,
+        validators=[MinLengthValidator(2)]
+    )
+    ordersPrefix = models.CharField(
+        max_length=10,
+        unique=True,
+        validators=[MinLengthValidator(2)],
+        help_text="Unique prefix for order numbers"
+    )
+    status = models.ForeignKey(
+        Status,
+        on_delete=models.PROTECT,
+        related_name='projects'
+    )
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.PROTECT,
+        related_name='projects'
+    )
+    notes = models.TextField(blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        related_name='projects_created',
+        null=True
+    )
+    modified_by = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        related_name='projects_modified',
+        null=True
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['customer', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.customer.name})"
 
 class User(AbstractUser):
-    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
-    project = models.ForeignKey('Projects', on_delete=models.SET_NULL, null=True, blank=True)
-    role = models.ForeignKey('Roles', on_delete=models.SET_NULL, null=True, blank=True)
-    created_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_users')
-    modified_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='modified_users')
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='custom_user_set',
-        blank=True,
+    """
+    Custom user model extending Django's AbstractUser
+    """
+    first_name = models.CharField(max_length=30)  # Changed from firstName
+    last_name = models.CharField(max_length=30)   # Changed from lastName
+    email = models.EmailField(unique=True)
+    status = models.ForeignKey(
+        Status,
+        on_delete=models.PROTECT,
+        related_name='users'
     )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='custom_user_permissions_set',
-        blank=True,
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.PROTECT,
+        related_name='users',
+        null=True,
+        blank=True
+    )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.PROTECT,
+        related_name='users'
     )
 
+    # Fields required for extending AbstractUser
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
-class Roles(models.Model):
-    role_name = models.CharField(max_length=100, unique=True)
-    permissions = models.JSONField()  # Ejemplo: {"can_view": True, "can_edit": False}
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_roles')
-    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='modified_roles')
+    class Meta:
+        indexes = [
+            models.Index(fields=['email', 'username']),
+            models.Index(fields=['project', 'role']),
+        ]
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.email})"
 
-class Customers(models.Model):
-    name = models.CharField(max_length=255)
-    lookup_code = models.CharField(max_length=100, unique=True)
-    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
-    address = models.ForeignKey(Addresses, on_delete=models.SET_NULL, null=True, blank=True)
-    output_format = models.CharField(max_length=10, choices=[('CSV', 'CSV'), ('JSON', 'JSON')])
-    notes = models.TextField(blank=True, null=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_customers')
-    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='modified_customers')
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
-
-class Projects(models.Model):
-    name = models.CharField(max_length=255)
-    lookup_code = models.CharField(max_length=100, unique=True)
-    orders_prefix = models.CharField(max_length=50, unique=True)
-    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
-    customer = models.ForeignKey(Customers, on_delete=models.CASCADE, related_name='projects')
-    notes = models.TextField(blank=True, null=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_projects')
-    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='modified_projects')
+    def get_short_name(self):
+        return self.first_name

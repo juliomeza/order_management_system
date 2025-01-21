@@ -5,28 +5,63 @@ This document focuses on the database models definition, detailing the core enti
 
 ## Core Entities
 
-### 1. Authentication & Authorization
+### 1. Core
 
-#### Users
+#### Status
 - **Columns:**
   - id (Primary Key)
-  - firstName, lastName, username (Unique), email, password (hashed)
-  - statusID (Foreign Key to Status table)
-  - projectID (Foreign Key to Projects table)
-  - roleID (Foreign Key to Roles table)
+  - name, description
+  - code (Hierarchical structure)
+  - statusType (Entity this status applies to)
+  - isActive
   - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Central user management for all system actors
-- **Relationships:** Links to Projects and Roles
+- **Purpose:** Centralized status management for all entities
+- **Usage:** Used by multiple entities for state management
 
-#### Roles
+#### Types
 - **Columns:**
   - id (Primary Key)
-  - roleName (e.g., SuperAdmin, ClientAdmin, Operator)
-  - permissions (JSON field storing permitted actions)
+  - entity (The entity this type applies to)
+  - typeName, description
+  - isActive
   - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Define user access levels and capabilities
+- **Purpose:** Flexible type management for various entities
+- **Usage:** Generic type classification system
 
-### 2. Customer Management
+#### FeatureFlags
+- **Columns:**
+  - id (Primary Key)
+  - name, description
+  - isEnabled
+  - scope (ENUM: global/customer/project)
+  - scopeID (ID of customer/project if scoped)
+  - createdDate, modifiedDate, createdBy, modifiedBy
+- **Purpose:** Feature toggle management
+
+#### Logs
+- **Purpose:** History table for system activities
+- **Columns:**
+  - id (Primary Key)
+  - entity (table name)
+  - entityID
+  - action (CREATE/UPDATE/DELETE)
+  - details (JSON with before/after states)
+  - timestamp
+  - userID
+- **Usage:** General activity logging, distinct from AuditLogs
+
+#### AuditLogs
+- **Columns:**
+  - id (Primary Key)
+  - entity (table name)
+  - entityID
+  - action (ENUM: CREATE/UPDATE/DELETE)
+  - userID
+  - timestamp
+  - details (JSON with changes)
+- **Purpose:** System-wide change tracking
+
+### 2. Customers
 
 #### Customers
 - **Columns:**
@@ -53,44 +88,26 @@ This document focuses on the database models definition, detailing the core enti
 - **Purpose:** Organize customer operations
 - **Relationships:** Belongs to Customer, has many Users
 
-### 3. Operations Management
-
-#### Orders
+#### Users
 - **Columns:**
   - id (Primary Key)
-  - lookupCodeOrder (Unique), lookupCodeShipment (Unique)
+  - firstName, lastName, username (Unique), email, password (hashed)
   - statusID (Foreign Key to Status table)
-  - orderType (ENUM: 'INBOUND', 'OUTBOUND')
-    - INBOUND: Receiving inventory into warehouse
-    - OUTBOUND: Shipping inventory to customers
-  - projectID, warehouseID, carrierID, serviceTypeID, addressID, billingID (Foreign Keys)
-  - orderClassID (Foreign Key to OrderClasses)
-  - expectedDeliveryDate
-  - notes
+  - projectID (Foreign Key to Projects table)
+  - roleID (Foreign Key to Roles table)
   - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Core business transaction record
-- **Relationships:** Links to multiple entities (Projects, Warehouses, Carriers, Addresses, OrderClasses)
+- **Purpose:** Central user management for all system actors
+- **Relationships:** Links to Projects and Roles
 
-#### Warehouses
+#### Roles
 - **Columns:**
   - id (Primary Key)
-  - name, lookupCode (Unique)
-  - addressID (Foreign Key to Addresses)
-  - notes, statusID (Foreign Key to Status table)
+  - roleName (e.g., SuperAdmin, ClientAdmin, Operator)
+  - permissions (JSON field storing permitted actions)
   - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Physical location management
-- **Relationships:** Has many Inventory records
+- **Purpose:** Define user access levels and capabilities
 
-#### Materials
-- **Columns:**
-  - id (Primary Key)
-  - lookupCode (Unique), name, description
-  - projectID (Foreign Key to Projects)
-  - statusID (Foreign Key to Status table)
-  - type, isSerialized, price, uomID (Foreign Key to UOM)
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Product catalog management
-- **Relationships:** Belongs to Project, references UOM
+### 3. Inventory
 
 #### Inventory
 - **Columns:**
@@ -116,7 +133,64 @@ This document focuses on the database models definition, detailing the core enti
 - **Purpose:** Track individual serialized units within inventory
 - **Relationships:** Belongs to specific Inventory record via licensePlateID
 
-### 4. Support Entities
+#### Materials
+- **Columns:**
+  - id (Primary Key)
+  - lookupCode (Unique), name, description
+  - projectID (Foreign Key to Projects)
+  - statusID (Foreign Key to Status table)
+  - type, isSerialized, price, uomID (Foreign Key to UOM)
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Product catalog management
+- **Relationships:** Belongs to Project, references UOM
+
+#### UOM (Units of Measure)
+- **Columns:**
+  - id (Primary Key)
+  - name, lookupCode (Unique)
+  - description
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Standardize unit measurements across the system
+- **Relationships:** Referenced by Materials table
+
+### 4. Orders
+
+#### Orders
+- **Columns:**
+  - id (Primary Key)
+  - lookupCodeOrder (Unique), lookupCodeShipment (Unique)
+  - statusID (Foreign Key to Status table)
+  - orderType (ENUM: 'INBOUND', 'OUTBOUND')
+    - INBOUND: Receiving inventory into warehouse
+    - OUTBOUND: Shipping inventory to customers
+  - projectID, warehouseID, carrierID, serviceTypeID, addressID, billingID (Foreign Keys)
+  - orderClassID (Foreign Key to OrderClasses)
+  - expectedDeliveryDate
+  - notes
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Core business transaction record
+- **Relationships:** Links to multiple entities (Projects, Warehouses, Carriers, Addresses, OrderClasses)
+
+#### OrderClasses
+- **Columns:**
+  - id (Primary Key)
+  - className, description
+  - isActive
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Categorize orders by type and processing rules
+- **Relationships:** Referenced by Orders table
+
+### 5. Logistics
+
+#### Warehouses
+- **Columns:**
+  - id (Primary Key)
+  - name, lookupCode (Unique)
+  - addressID (Foreign Key to Addresses)
+  - notes, statusID (Foreign Key to Status table)
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Physical location management
+- **Relationships:** Has many Inventory records
 
 #### Addresses
 - **Columns:**
@@ -144,80 +218,6 @@ This document focuses on the database models definition, detailing the core enti
   - carrierID (Foreign Key to Carriers)
   - createdDate, modifiedDate, createdByUser, modifiedByUser
 - **Purpose:** Specific shipping service options
-
-#### UOM (Units of Measure)
-- **Columns:**
-  - id (Primary Key)
-  - name, lookupCode (Unique)
-  - description
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Standardize unit measurements across the system
-- **Relationships:** Referenced by Materials table
-
-#### OrderClasses
-- **Columns:**
-  - id (Primary Key)
-  - className, description
-  - isActive
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Categorize orders by type and processing rules
-- **Relationships:** Referenced by Orders table
-
-### 5. System Management
-
-#### Status
-- **Columns:**
-  - id (Primary Key)
-  - name, description
-  - code (Hierarchical structure)
-  - statusType (Entity this status applies to)
-  - isActive
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Centralized status management for all entities
-- **Usage:** Used by multiple entities for state management
-
-#### Types
-- **Columns:**
-  - id (Primary Key)
-  - entity (The entity this type applies to)
-  - typeName, description
-  - isActive
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Flexible type management for various entities
-- **Usage:** Generic type classification system
-
-#### Logs
-- **Purpose:** History table for system activities
-- **Columns:**
-  - id (Primary Key)
-  - entity (table name)
-  - entityID
-  - action (CREATE/UPDATE/DELETE)
-  - details (JSON with before/after states)
-  - timestamp
-  - userID
-- **Usage:** General activity logging, distinct from AuditLogs
-
-#### FeatureFlags
-- **Columns:**
-  - id (Primary Key)
-  - name, description
-  - isEnabled
-  - scope (ENUM: global/customer/project)
-  - scopeID (ID of customer/project if scoped)
-  - createdDate, modifiedDate, createdBy, modifiedBy
-- **Purpose:** Feature toggle management
-
-#### AuditLogs
-- **Columns:**
-  - id (Primary Key)
-  - entity (table name)
-  - entityID
-  - action (ENUM: CREATE/UPDATE/DELETE)
-  - userID
-  - timestamp
-  - details (JSON with changes)
-- **Purpose:** System-wide change tracking
 
 ## Database Optimization
 
