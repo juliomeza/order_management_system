@@ -20,14 +20,15 @@ order_management_system/
 │   │   ├── urls.py                   # Main URLs
 │   │   ├── wsgi.py                   # WSGI configuration
 │   │   └── asgi.py                   # ASGI configuration
-│   ├── modules/
-│   │   ├── customer_management/      # Customer-related functionality
+│   ├── apps/
+│   │   ├── core/                     # Shared models
+│   │   ├── customers/                # Customer-related functionality
 │   │   │   ├── api/                  # API endpoints
 │   │   │   ├── models/               # Data models
 │   │   │   └── services/             # Business logic
-│   │   ├── order_processing/         # Order-specific logic
-│   │   ├── inventory_control/        # Inventory-specific logic
-│   │   └── feature_toggles/          # Feature toggle implementation
+│   │   ├── inventory/                # Inventory-specific logic
+│   │   ├── orders/                   # Order-specific logic
+│   │   └── logistics/                # Transportation-specific logic
 │   ├── shared/
 │   │   ├── auth/                     # Authentication and permissions
 │   │   ├── middleware/               # Middleware logic
