@@ -1,0 +1,23 @@
+# General
+.DS_Store
+Thumbs.db
+
+# Backend (Django o cualquier framework de servidor)
+backend/venv/
+backend/*.pyc
+backend/__pycache__/
+backend/db.sqlite3
+backend/migrations/
+
+# Frontend (Node.js o frameworks como React/Vue)
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+# Documentación
+docs/*.log
+docs/temp/
+
+# Entornos y configuración sensible
+.env
+*.log
