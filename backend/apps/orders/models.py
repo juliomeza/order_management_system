@@ -7,15 +7,15 @@ class OrderClass(TimeStampedModel):
     """
     Categorize orders by type and processing rules
     """
-    className = models.CharField(max_length=50)
+    class_name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    isActive = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = "Order Classes"
 
     def __str__(self):
-        return self.className
+        return self.class_name
 
 class Order(TimeStampedModel):
     """
@@ -27,13 +27,13 @@ class Order(TimeStampedModel):
     ]
 
     # Lookup Codes
-    lookupCodeOrder = models.CharField(
+    lookup_code_order = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)],
         help_text="Unique order identifier"
     )
-    lookupCodeShipment = models.CharField(
+    lookup_code_shipment = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)],
@@ -46,7 +46,7 @@ class Order(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='orders'
     )
-    orderType = models.CharField(
+    order_type = models.CharField(
         max_length=8,
         choices=ORDER_TYPES,
         help_text="INBOUND: Receiving inventory, OUTBOUND: Shipping to customers"
@@ -70,43 +70,43 @@ class Order(TimeStampedModel):
         null=True,
         blank=True
     )
-    serviceType = models.ForeignKey(
+    service_type = models.ForeignKey(
         'logistics.CarrierService',
         on_delete=models.PROTECT,
         related_name='orders',
         null=True,
         blank=True
     )
-    shippingAddress = models.ForeignKey(
+    shipping_address = models.ForeignKey(
         'logistics.Address',
         on_delete=models.PROTECT,
         related_name='shipping_orders'
     )
-    billingAddress = models.ForeignKey(
+    billing_address = models.ForeignKey(
         'logistics.Address',
         on_delete=models.PROTECT,
         related_name='billing_orders'
     )
-    orderClass = models.ForeignKey(
+    order_class = models.ForeignKey(
         OrderClass,
         on_delete=models.PROTECT,
         related_name='orders'
     )
 
     # Additional Fields
-    expectedDeliveryDate = models.DateTimeField()
+    expected_delivery_date = models.DateTimeField()
     notes = models.TextField(blank=True)
 
     class Meta:
         indexes = [
             models.Index(fields=['project', 'status']),
-            models.Index(fields=['lookupCodeOrder']),
-            models.Index(fields=['lookupCodeShipment']),
-            models.Index(fields=['expectedDeliveryDate']),
+            models.Index(fields=['lookup_code_order']),
+            models.Index(fields=['lookup_code_shipment']),
+            models.Index(fields=['expected_delivery_date']),
         ]
 
     def __str__(self):
-        return f"{self.orderType} - {self.lookupCodeOrder}"
+        return f"{self.order_type} - {self.lookup_code_order}"
 
     def save(self, *args, **kwargs):
         # Here you could add logic to validate order numbers based on project prefix
@@ -127,14 +127,14 @@ class OrderLine(TimeStampedModel):
        related_name='order_lines'
    )
    quantity = models.DecimalField(max_digits=10, decimal_places=2)
-   licensePlate = models.ForeignKey(
+   license_plate = models.ForeignKey(
        'inventory.Inventory',
        on_delete=models.PROTECT,
        related_name='order_lines',
        null=True,
        blank=True
    )
-   serialNumber = models.ForeignKey(
+   serial_number = models.ForeignKey(
        'inventory.InventorySerialNumber',
        on_delete=models.PROTECT,
        related_name='order_lines',
@@ -142,15 +142,15 @@ class OrderLine(TimeStampedModel):
        blank=True
    )
    lot = models.CharField(max_length=50, blank=True)
-   vendorLot = models.CharField(max_length=50, blank=True)
+   vendor_lot = models.CharField(max_length=50, blank=True)
    notes = models.TextField(blank=True)
 
    class Meta:
        indexes = [
            models.Index(fields=['order', 'material']),
-           models.Index(fields=['licensePlate']),
-           models.Index(fields=['serialNumber']),
+           models.Index(fields=['license_plate']),
+           models.Index(fields=['serial_number']),
        ]
 
    def __str__(self):
-       return f"Order {self.order.lookupCodeOrder} - {self.material.name} ({self.quantity})"
+       return f"Order {self.order.lookup_code_order} - {self.material.name} ({self.quantity})"

@@ -14,7 +14,7 @@ class Customer(TimeStampedModel):
    ]
 
    name = models.CharField(max_length=100)
-   lookupCode = models.CharField(
+   lookup_code = models.CharField(
        max_length=50,
        unique=True,
        validators=[MinLengthValidator(2)]
@@ -30,7 +30,7 @@ class Customer(TimeStampedModel):
        related_name='customers',
        null=True
    )
-   outputFormat = models.CharField(
+   output_format = models.CharField(
        max_length=4,
        choices=OUTPUT_FORMAT_CHOICES,
        default='JSON'
@@ -38,19 +38,19 @@ class Customer(TimeStampedModel):
    notes = models.TextField(blank=True)
 
    def __str__(self):
-       return f"{self.name} ({self.lookupCode})"
+       return f"{self.name} ({self.lookup_code})"
 
 class Project(TimeStampedModel):
    """
    Organize customer operations
    """
    name = models.CharField(max_length=100)
-   lookupCode = models.CharField(
+   lookup_code = models.CharField(
        max_length=50,
        unique=True,
        validators=[MinLengthValidator(2)]
    )
-   ordersPrefix = models.CharField(
+   orders_prefix = models.CharField(
        max_length=10,
        unique=True,
        validators=[MinLengthValidator(2)],
@@ -101,8 +101,8 @@ class User(AbstractUser):
     """
     Custom user model extending Django's AbstractUser
     """
-    first_name = models.CharField(max_length=30)  # Changed from firstName
-    last_name = models.CharField(max_length=30)   # Changed from lastName
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     status = models.ForeignKey(
         Status,

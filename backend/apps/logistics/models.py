@@ -11,54 +11,56 @@ class Address(TimeStampedModel):
         ('billing', 'Billing'),
     ]
 
+    ENTITY_TYPES = [
+        ('customer', 'Customer'),
+        ('warehouse', 'Warehouse'),
+        ('recipient', 'Recipient'),
+    ]
+
     # Address fields
-    addressLine1 = models.CharField(max_length=100)
-    addressLine2 = models.CharField(max_length=100, blank=True)
+    address_line_1 = models.CharField(max_length=100)
+    address_line_2 = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
-    postalCode = models.CharField(max_length=20)
+    postal_code = models.CharField(max_length=20)
     
     # Entity reference (polymorphic)
-    entityID = models.PositiveIntegerField(
+    entity_id = models.PositiveIntegerField(
         null=True,
         blank=True,
         help_text="ID of customer/warehouse"
     )
-    entityType = models.CharField(
+    entity_type = models.CharField(
         max_length=20,
-        choices=[
-            ('customer', 'Customer'),
-            ('warehouse', 'Warehouse'),
-            ('recipient', 'Recipient'),
-        ]
+        choices=ENTITY_TYPES
     )
     
-    addressType = models.CharField(
+    address_type = models.CharField(
         max_length=10,
         choices=ADDRESS_TYPES,
         default='shipping'
     )
     
     notes = models.TextField(blank=True)
-    attentionOf = models.CharField(max_length=100, blank=True)
+    attention_of = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name_plural = "Addresses"
         indexes = [
-            models.Index(fields=['entityType', 'entityID']),
+            models.Index(fields=['entity_type', 'entity_id']),
             models.Index(fields=['country', 'state', 'city']),
         ]
 
     def __str__(self):
-        return f"{self.addressLine1}, {self.city}, {self.state}"
+        return f"{self.address_line_1}, {self.city}, {self.state}"
 
 class Warehouse(TimeStampedModel):
     """
     Physical location management
     """
     name = models.CharField(max_length=100)
-    lookupCode = models.CharField(
+    lookup_code = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)]
@@ -77,18 +79,18 @@ class Warehouse(TimeStampedModel):
 
     class Meta:
         indexes = [
-            models.Index(fields=['lookupCode']),
+            models.Index(fields=['lookup_code']),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookupCode})"
+        return f"{self.name} ({self.lookup_code})"
 
 class Carrier(TimeStampedModel):
     """
     Shipping provider management
     """
     name = models.CharField(max_length=100)
-    lookupCode = models.CharField(
+    lookup_code = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)]
@@ -96,18 +98,18 @@ class Carrier(TimeStampedModel):
 
     class Meta:
         indexes = [
-            models.Index(fields=['lookupCode']),
+            models.Index(fields=['lookup_code']),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookupCode})"
+        return f"{self.name} ({self.lookup_code})"
 
 class CarrierService(TimeStampedModel):
     """
     Specific shipping service options
     """
     name = models.CharField(max_length=100)
-    lookupCode = models.CharField(
+    lookup_code = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)]
@@ -120,7 +122,7 @@ class CarrierService(TimeStampedModel):
 
     class Meta:
         indexes = [
-            models.Index(fields=['lookupCode']),
+            models.Index(fields=['lookup_code']),
             models.Index(fields=['carrier']),
         ]
 

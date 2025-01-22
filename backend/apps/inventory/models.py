@@ -8,7 +8,7 @@ class UOM(TimeStampedModel):
     Units of Measure for materials
     """
     name = models.CharField(max_length=50)
-    lookupCode = models.CharField(
+    lookup_code = models.CharField(
         max_length=20,
         unique=True,
         validators=[MinLengthValidator(2)]
@@ -19,17 +19,17 @@ class UOM(TimeStampedModel):
         verbose_name = "Unit of Measure"
         verbose_name_plural = "Units of Measure"
         indexes = [
-            models.Index(fields=['lookupCode']),
+            models.Index(fields=['lookup_code']),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookupCode})"
+        return f"{self.name} ({self.lookup_code})"
 
 class Material(TimeStampedModel):
     """
     Product catalog management
     """
-    lookupCode = models.CharField(
+    lookup_code = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)]
@@ -47,7 +47,7 @@ class Material(TimeStampedModel):
         related_name='materials'
     )
     type = models.CharField(max_length=50)
-    isSerialized = models.BooleanField(default=False)
+    is_serialized = models.BooleanField(default=False)
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -63,11 +63,11 @@ class Material(TimeStampedModel):
     class Meta:
         indexes = [
             models.Index(fields=['project', 'status']),
-            models.Index(fields=['lookupCode']),
+            models.Index(fields=['lookup_code']),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookupCode})"
+        return f"{self.name} ({self.lookup_code})"
 
 class Inventory(TimeStampedModel):
     """
@@ -89,17 +89,17 @@ class Inventory(TimeStampedModel):
         related_name='inventories'
     )
     location = models.CharField(max_length=50)
-    licensePlateID = models.CharField(
+    license_plate_id = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)]
     )
-    licensePlate = models.CharField(max_length=50)
+    license_plate = models.CharField(max_length=50)
     lot = models.CharField(max_length=50, blank=True)
-    vendorLot = models.CharField(max_length=50, blank=True)
+    vendor_lot = models.CharField(max_length=50, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    lastUpdated = models.DateTimeField(auto_now=True)
-    updatedByUser = models.ForeignKey(
+    last_updated = models.DateTimeField(auto_now=True)
+    updated_by_user = models.ForeignKey(
         'customers.User',
         on_delete=models.PROTECT,
         related_name='inventory_updates'
@@ -109,7 +109,7 @@ class Inventory(TimeStampedModel):
         verbose_name_plural = "Inventories"
         indexes = [
             models.Index(fields=['project', 'warehouse', 'material']),
-            models.Index(fields=['licensePlateID']),
+            models.Index(fields=['license_plate_id']),
             models.Index(fields=['location']),
         ]
 
@@ -120,7 +120,7 @@ class InventorySerialNumber(TimeStampedModel):
     """
     Track individual serialized units within inventory
     """
-    lookupCode = models.CharField(
+    lookup_code = models.CharField(
         max_length=50,
         unique=True,
         validators=[MinLengthValidator(2)],
@@ -131,7 +131,7 @@ class InventorySerialNumber(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='serial_numbers'
     )
-    licensePlate = models.ForeignKey(
+    license_plate = models.ForeignKey(
         Inventory,
         on_delete=models.PROTECT,
         related_name='serial_numbers'
@@ -140,9 +140,9 @@ class InventorySerialNumber(TimeStampedModel):
 
     class Meta:
         indexes = [
-            models.Index(fields=['lookupCode']),
-            models.Index(fields=['licensePlate']),
+            models.Index(fields=['lookup_code']),
+            models.Index(fields=['license_plate']),
         ]
 
     def __str__(self):
-        return f"SN: {self.lookupCode}"
+        return f"SN: {self.lookup_code}"
