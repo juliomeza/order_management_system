@@ -66,14 +66,18 @@ class Order(TimeStampedModel):
     carrier = models.ForeignKey(
         'logistics.Carrier',
         on_delete=models.PROTECT,
-        related_name='orders'
+        related_name='orders',
+        null=True,
+        blank=True
     )
     serviceType = models.ForeignKey(
         'logistics.CarrierService',
         on_delete=models.PROTECT,
-        related_name='orders'
+        related_name='orders',
+        null=True,
+        blank=True
     )
-    address = models.ForeignKey(
+    shippingAddress = models.ForeignKey(
         'logistics.Address',
         on_delete=models.PROTECT,
         related_name='shipping_orders'

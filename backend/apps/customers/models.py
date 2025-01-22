@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 from apps.core.models import Status, Role
+from apps.logistics.models import Warehouse, Carrier, CarrierService
 
 class Customer(models.Model):
     """
@@ -79,6 +80,27 @@ class Project(models.Model):
         Customer,
         on_delete=models.PROTECT,
         related_name='projects'
+    )
+    warehouse = models.ForeignKey(
+        'logistics.Warehouse',
+        on_delete=models.SET_NULL,
+        related_name='projects',
+        null=True,
+        blank=True
+    )
+    carrier = models.ForeignKey(
+        'logistics.Carrier',
+        on_delete=models.SET_NULL,
+        related_name='projects',
+        null=True,
+        blank=True
+    )
+    service = models.ForeignKey(
+        'logistics.CarrierService',
+        on_delete=models.SET_NULL,
+        related_name='projects',
+        null=True,
+        blank=True
     )
     notes = models.TextField(blank=True)
     created_date = models.DateTimeField(auto_now_add=True)

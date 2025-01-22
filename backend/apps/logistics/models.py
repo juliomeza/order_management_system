@@ -30,6 +30,7 @@ class Address(TimeStampedModel):
         choices=[
             ('customer', 'Customer'),
             ('warehouse', 'Warehouse'),
+            ('recipient', 'Recipient'),
         ]
     )
     
