@@ -7,15 +7,15 @@ class TimeStampedModel(models.Model):
     An abstract base class model that provides self-updating
     'created' and 'modified' fields.
     """
-    createdDate = models.DateTimeField(auto_now_add=True)
-    modifiedDate = models.DateTimeField(auto_now=True)
-    createdByUser = models.ForeignKey(
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+    created_by_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='%(class)s_created',
         null=True
     )
-    modifiedByUser = models.ForeignKey(
+    modified_by_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='%(class)s_modified',
@@ -29,13 +29,13 @@ class Role(TimeStampedModel):
     """
     Define user access levels and capabilities
     """
-    roleName = models.CharField(max_length=50, unique=True)
+    role_name = models.CharField(max_length=50, unique=True)
     permissions = models.JSONField(
         help_text="JSON field storing permitted actions"
     )
 
     def __str__(self):
-        return self.roleName
+        return self.role_name
 
 class Status(TimeStampedModel):
     """
@@ -48,40 +48,40 @@ class Status(TimeStampedModel):
         validators=[MinLengthValidator(2)],
         help_text="Hierarchical structure code"
     )
-    statusType = models.CharField(
+    status_type = models.CharField(
         max_length=50,
         help_text="Entity this status applies to"
     )
-    isActive = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = "Statuses"
-        unique_together = ['code', 'statusType']
+        unique_together = ['code', 'status_type']
         indexes = [
-            models.Index(fields=['code', 'statusType']),
+            models.Index(fields=['code', 'status_type']),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.statusType})"
+        return f"{self.name} ({self.status_type})"
 
 class Types(TimeStampedModel):
     """
     Flexible type management for various entities
     """
     entity = models.CharField(max_length=50)
-    typeName = models.CharField(max_length=100)
+    type_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    isActive = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = "Types"
-        unique_together = ['entity', 'typeName']
+        unique_together = ['entity', 'type_name']
         indexes = [
-            models.Index(fields=['entity', 'typeName']),
+            models.Index(fields=['entity', 'type_name']),
         ]
 
     def __str__(self):
-        return f"{self.typeName} ({self.entity})"
+        return f"{self.type_name} ({self.entity})"
 
 class FeatureFlags(TimeStampedModel):
     """
@@ -95,13 +95,13 @@ class FeatureFlags(TimeStampedModel):
 
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
-    isEnabled = models.BooleanField(default=False)
+    is_enabled = models.BooleanField(default=False)
     scope = models.CharField(
         max_length=20,
         choices=SCOPE_CHOICES,
         default='global'
     )
-    scopeID = models.PositiveIntegerField(
+    scope_id = models.PositiveIntegerField(
         null=True,
         blank=True,
         help_text="ID of customer/project if scoped"
@@ -110,7 +110,7 @@ class FeatureFlags(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Feature Flags"
         indexes = [
-            models.Index(fields=['scope', 'scopeID']),
+            models.Index(fields=['scope', 'scope_id']),
         ]
 
     def __str__(self):
@@ -127,11 +127,11 @@ class Logs(TimeStampedModel):
     ]
 
     entity = models.CharField(max_length=50)
-    entityID = models.PositiveIntegerField()
+    entity_id = models.PositiveIntegerField()
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     details = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    userID = models.ForeignKey(
+    user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='activity_logs'
@@ -140,11 +140,11 @@ class Logs(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Logs"
         indexes = [
-            models.Index(fields=['entity', 'entityID', 'timestamp']),
+            models.Index(fields=['entity', 'entity_id', 'timestamp']),
         ]
 
     def __str__(self):
-        return f"{self.action} on {self.entity} ({self.entityID})"
+        return f"{self.action} on {self.entity} ({self.entity_id})"
 
 class AuditLogs(TimeStampedModel):
     """
@@ -157,9 +157,9 @@ class AuditLogs(TimeStampedModel):
     ]
 
     entity = models.CharField(max_length=50)
-    entityID = models.PositiveIntegerField()
+    entity_id = models.PositiveIntegerField()
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    userID = models.ForeignKey(
+    user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='audit_logs'
@@ -170,8 +170,8 @@ class AuditLogs(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Audit Logs"
         indexes = [
-            models.Index(fields=['entity', 'entityID', 'timestamp']),
+            models.Index(fields=['entity', 'entity_id', 'timestamp']),
         ]
 
     def __str__(self):
-        return f"{self.action} on {self.entity} ({self.entityID})"
+        return f"{self.action} on {self.entity} ({self.entity_id})"
