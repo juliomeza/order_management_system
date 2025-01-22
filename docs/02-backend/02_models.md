@@ -61,6 +61,14 @@ This document focuses on the database models definition, detailing the core enti
   - details (JSON with changes)
 - **Purpose:** System-wide change tracking
 
+#### Roles
+- **Columns:**
+  - id (Primary Key)
+  - roleName (e.g., SuperAdmin, ClientAdmin, Operator)
+  - permissions (JSON field storing permitted actions)
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Define user access levels and capabilities
+
 ### 2. Customers
 
 #### Customers
@@ -98,14 +106,6 @@ This document focuses on the database models definition, detailing the core enti
   - createdDate, modifiedDate, createdByUser, modifiedByUser
 - **Purpose:** Central user management for all system actors
 - **Relationships:** Links to Projects and Roles
-
-#### Roles
-- **Columns:**
-  - id (Primary Key)
-  - roleName (e.g., SuperAdmin, ClientAdmin, Operator)
-  - permissions (JSON field storing permitted actions)
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Define user access levels and capabilities
 
 ### 3. Inventory
 

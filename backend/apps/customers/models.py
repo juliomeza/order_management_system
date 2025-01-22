@@ -1,33 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
-from apps.core.models import Status
-
-class Role(models.Model):
-    """
-    Define user access levels and capabilities
-    """
-    roleName = models.CharField(max_length=50, unique=True)
-    permissions = models.JSONField(
-        help_text="JSON field storing permitted actions"
-    )
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        'User',
-        on_delete=models.PROTECT,
-        related_name='roles_created',
-        null=True
-    )
-    modified_by = models.ForeignKey(
-        'User',
-        on_delete=models.PROTECT,
-        related_name='roles_modified',
-        null=True
-    )
-
-    def __str__(self):
-        return self.roleName
+from apps.core.models import Status, Role
 
 class Customer(models.Model):
     """
@@ -140,7 +114,8 @@ class User(AbstractUser):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='users'
+        related_name='users',
+        null=True
     )
     project = models.ForeignKey(
         Project,
@@ -150,9 +125,10 @@ class User(AbstractUser):
         blank=True
     )
     role = models.ForeignKey(
-        Role,
+        'core.Role',
         on_delete=models.PROTECT,
-        related_name='users'
+        related_name='users',
+        null=True
     )
 
     # Fields required for extending AbstractUser

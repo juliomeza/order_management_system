@@ -25,6 +25,18 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+class Role(TimeStampedModel):
+    """
+    Define user access levels and capabilities
+    """
+    roleName = models.CharField(max_length=50, unique=True)
+    permissions = models.JSONField(
+        help_text="JSON field storing permitted actions"
+    )
+
+    def __str__(self):
+        return self.roleName
+
 class Status(TimeStampedModel):
     """
     Centralized status management for all entities
