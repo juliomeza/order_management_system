@@ -155,6 +155,15 @@ This document focuses on the database models definition, detailing the core enti
 
 ### 4. Orders
 
+#### OrderClasses
+- **Columns:**
+  - id (Primary Key)
+  - className, description
+  - isActive
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Categorize orders by type and processing rules
+- **Relationships:** Referenced by Orders table
+
 #### Orders
 - **Columns:**
   - id (Primary Key)
@@ -171,14 +180,24 @@ This document focuses on the database models definition, detailing the core enti
 - **Purpose:** Core business transaction record
 - **Relationships:** Links to multiple entities (Projects, Warehouses, Carriers, Addresses, OrderClasses)
 
-#### OrderClasses
+#### OrderLines
 - **Columns:**
   - id (Primary Key)
-  - className, description
-  - isActive
+  - orderID (Foreign Key to Orders)
+  - materialID (Foreign Key to Materials)
+  - lot (optional)
+  - vendorLot (optional)
+  - quantity
+  - licensePlateID (Foreign Key to Inventory, optional)
+  - serialNumberID (Foreign Key to InventorySerialNumbers, optional)
+  - statusID (Foreign Key to Status table)
+  - notes
   - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Categorize orders by type and processing rules
-- **Relationships:** Referenced by Orders table
+- **Purpose:** Track individual line items within orders
+- **Relationships:** 
+  - Belongs to Orders
+  - Links to Materials, Inventory, InventorySerialNumbers
+- **Usage:** Supports both serialized and non-serialized inventory tracking
 
 ### 5. Logistics
 

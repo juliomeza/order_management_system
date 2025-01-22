@@ -111,3 +111,46 @@ class Order(TimeStampedModel):
     def save(self, *args, **kwargs):
         # Here you could add logic to validate order numbers based on project prefix
         super().save(*args, **kwargs)
+
+class OrderLine(TimeStampedModel):
+   """
+   Track individual line items within orders
+   """
+   order = models.ForeignKey(
+       'Order',
+       on_delete=models.PROTECT,
+       related_name='lines'
+   )
+   material = models.ForeignKey(
+       'inventory.Material',
+       on_delete=models.PROTECT,
+       related_name='order_lines'
+   )
+   quantity = models.DecimalField(max_digits=10, decimal_places=2)
+   licensePlate = models.ForeignKey(
+       'inventory.Inventory',
+       on_delete=models.PROTECT,
+       related_name='order_lines',
+       null=True,
+       blank=True
+   )
+   serialNumber = models.ForeignKey(
+       'inventory.InventorySerialNumber',
+       on_delete=models.PROTECT,
+       related_name='order_lines',
+       null=True,
+       blank=True
+   )
+   lot = models.CharField(max_length=50, blank=True)
+   vendorLot = models.CharField(max_length=50, blank=True)
+   notes = models.TextField(blank=True)
+
+   class Meta:
+       indexes = [
+           models.Index(fields=['order', 'material']),
+           models.Index(fields=['licensePlate']),
+           models.Index(fields=['serialNumber']),
+       ]
+
+   def __str__(self):
+       return f"Order {self.order.lookupCodeOrder} - {self.material.name} ({self.quantity})"

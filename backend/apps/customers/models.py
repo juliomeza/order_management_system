@@ -1,130 +1,101 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
-from apps.core.models import Status, Role
+from apps.core.models import Status, Role, TimeStampedModel
 from apps.logistics.models import Warehouse, Carrier, CarrierService
 
-class Customer(models.Model):
-    """
-    Root entity for multi-tenant structure
-    """
-    OUTPUT_FORMAT_CHOICES = [
-        ('CSV', 'CSV'),
-        ('JSON', 'JSON'),
-    ]
+class Customer(TimeStampedModel):
+   """
+   Root entity for multi-tenant structure
+   """
+   OUTPUT_FORMAT_CHOICES = [
+       ('CSV', 'CSV'),
+       ('JSON', 'JSON'),
+   ]
 
-    name = models.CharField(max_length=100)
-    lookupCode = models.CharField(
-        max_length=50,
-        unique=True,
-        validators=[MinLengthValidator(2)]
-    )
-    status = models.ForeignKey(
-        Status,
-        on_delete=models.PROTECT,
-        related_name='customers'
-    )
-    # addressID will be added when we create the Logistics app
-    address = models.ForeignKey(
-        'logistics.Address',
-        on_delete=models.PROTECT,
-        related_name='customers',
-        null=True
-    )
-    outputFormat = models.CharField(
-        max_length=4,
-        choices=OUTPUT_FORMAT_CHOICES,
-        default='JSON'
-    )
-    notes = models.TextField(blank=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        'User',
-        on_delete=models.PROTECT,
-        related_name='customers_created',
-        null=True
-    )
-    modified_by = models.ForeignKey(
-        'User',
-        on_delete=models.PROTECT,
-        related_name='customers_modified',
-        null=True
-    )
+   name = models.CharField(max_length=100)
+   lookupCode = models.CharField(
+       max_length=50,
+       unique=True,
+       validators=[MinLengthValidator(2)]
+   )
+   status = models.ForeignKey(
+       Status,
+       on_delete=models.PROTECT,
+       related_name='customers'
+   )
+   address = models.ForeignKey(
+       'logistics.Address',
+       on_delete=models.PROTECT,
+       related_name='customers',
+       null=True
+   )
+   outputFormat = models.CharField(
+       max_length=4,
+       choices=OUTPUT_FORMAT_CHOICES,
+       default='JSON'
+   )
+   notes = models.TextField(blank=True)
 
-    def __str__(self):
-        return f"{self.name} ({self.lookupCode})"
+   def __str__(self):
+       return f"{self.name} ({self.lookupCode})"
 
-class Project(models.Model):
-    """
-    Organize customer operations
-    """
-    name = models.CharField(max_length=100)
-    lookupCode = models.CharField(
-        max_length=50,
-        unique=True,
-        validators=[MinLengthValidator(2)]
-    )
-    ordersPrefix = models.CharField(
-        max_length=10,
-        unique=True,
-        validators=[MinLengthValidator(2)],
-        help_text="Unique prefix for order numbers"
-    )
-    status = models.ForeignKey(
-        Status,
-        on_delete=models.PROTECT,
-        related_name='projects'
-    )
-    customer = models.ForeignKey(
-        Customer,
-        on_delete=models.PROTECT,
-        related_name='projects'
-    )
-    warehouse = models.ForeignKey(
-        'logistics.Warehouse',
-        on_delete=models.SET_NULL,
-        related_name='projects',
-        null=True,
-        blank=True
-    )
-    carrier = models.ForeignKey(
-        'logistics.Carrier',
-        on_delete=models.SET_NULL,
-        related_name='projects',
-        null=True,
-        blank=True
-    )
-    service = models.ForeignKey(
-        'logistics.CarrierService',
-        on_delete=models.SET_NULL,
-        related_name='projects',
-        null=True,
-        blank=True
-    )
-    notes = models.TextField(blank=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        'User',
-        on_delete=models.PROTECT,
-        related_name='projects_created',
-        null=True
-    )
-    modified_by = models.ForeignKey(
-        'User',
-        on_delete=models.PROTECT,
-        related_name='projects_modified',
-        null=True
-    )
+class Project(TimeStampedModel):
+   """
+   Organize customer operations
+   """
+   name = models.CharField(max_length=100)
+   lookupCode = models.CharField(
+       max_length=50,
+       unique=True,
+       validators=[MinLengthValidator(2)]
+   )
+   ordersPrefix = models.CharField(
+       max_length=10,
+       unique=True,
+       validators=[MinLengthValidator(2)],
+       help_text="Unique prefix for order numbers"
+   )
+   status = models.ForeignKey(
+       Status,
+       on_delete=models.PROTECT,
+       related_name='projects'
+   )
+   customer = models.ForeignKey(
+       Customer,
+       on_delete=models.PROTECT,
+       related_name='projects'
+   )
+   warehouse = models.ForeignKey(
+       'logistics.Warehouse',
+       on_delete=models.SET_NULL,
+       related_name='projects',
+       null=True,
+       blank=True
+   )
+   carrier = models.ForeignKey(
+       'logistics.Carrier',
+       on_delete=models.SET_NULL,
+       related_name='projects',
+       null=True,
+       blank=True
+   )
+   service = models.ForeignKey(
+       'logistics.CarrierService',
+       on_delete=models.SET_NULL,
+       related_name='projects',
+       null=True,
+       blank=True
+   )
+   notes = models.TextField(blank=True)
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['customer', 'status']),
-        ]
+   class Meta:
+       indexes = [
+           models.Index(fields=['customer', 'status']),
+       ]
 
-    def __str__(self):
-        return f"{self.name} ({self.customer.name})"
+   def __str__(self):
+       return f"{self.name} ({self.customer.name})"
 
 class User(AbstractUser):
     """
