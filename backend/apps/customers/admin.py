@@ -10,34 +10,29 @@ class CustomUserAdmin(BaseUserAdmin):
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}), # Add it if needed: , 'groups', 'user_permissions'
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
+    
+    # Método personalizado para mostrar nombre completo
+    def full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    full_name.short_description = 'Full Name'
+
     # Campos visibles en la lista de usuarios
-    list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff')
-    # Habilitar búsqueda
-    search_fields = ('email', 'first_name', 'last_name')
-    # Definir orden
-    ordering = ('email',)
-    # Desactivar filtros automáticos
-    list_filter = []
+    list_display = ('project', 'full_name', 'email', 'role', 'status', 'is_staff')
+    search_fields = ('email', 'first_name', 'last_name', 'full_name')
+    ordering = ('project', 'email',)
+    list_filter = [] # Desactivar filtros automáticos
 
 # Personalización de CustomerAdmin
 class CustomerAdmin(admin.ModelAdmin):
-    # Campos visibles en la tabla
     list_display = ('name', 'lookup_code', 'status', 'output_format')
-    # Campos habilitados para búsqueda
     search_fields = ('name', 'lookup_code')
-    # Orden por defecto
     ordering = ('name',)
-    # Filtros laterales
     #list_filter = ('status', 'output_format')
 
 class ProjectAdmin(admin.ModelAdmin):
-    # Campos visibles en la tabla
-    list_display = ('name', 'lookup_code', 'customer', 'status', 'warehouse')
-    # Campos habilitados para búsqueda
+    list_display = ('customer', 'name', 'lookup_code', 'orders_prefix', 'status', 'warehouse')
     search_fields = ('name', 'lookup_code', 'customer__name')
-    # Orden por defecto
-    ordering = ('name',)
-    # Filtros laterales
+    ordering = ('customer', 'name',)
     #list_filter = ('status', 'customer', 'warehouse')
 
 # Re-registrar el modelo User

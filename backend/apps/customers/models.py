@@ -38,7 +38,7 @@ class Customer(TimeStampedModel):
    notes = models.TextField(blank=True)
 
    def __str__(self):
-       return f"{self.name} ({self.lookup_code})"
+       return f"{self.name}"
 
 class Project(TimeStampedModel):
    """
@@ -95,7 +95,7 @@ class Project(TimeStampedModel):
        ]
 
    def __str__(self):
-       return f"{self.name} ({self.customer.name})"
+       return f"{self.name}"
 
 class User(AbstractUser):
     """

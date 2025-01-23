@@ -67,7 +67,7 @@ class Material(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookup_code})"
+        return f"{self.name}"
 
 class Inventory(TimeStampedModel):
     """
@@ -114,7 +114,7 @@ class Inventory(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.material.name} at {self.warehouse.name} ({self.quantity})"
+        return f"{self.license_plate} ({self.quantity})"
 
 class InventorySerialNumber(TimeStampedModel):
     """

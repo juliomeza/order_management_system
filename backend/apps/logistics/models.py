@@ -83,7 +83,7 @@ class Warehouse(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookup_code})"
+        return f"{self.name}"
 
 class Carrier(TimeStampedModel):
     """
@@ -102,7 +102,7 @@ class Carrier(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.lookup_code})"
+        return f"{self.name}"
 
 class CarrierService(TimeStampedModel):
     """
