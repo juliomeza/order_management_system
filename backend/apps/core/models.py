@@ -64,25 +64,6 @@ class Status(TimeStampedModel):
     def __str__(self):
         return f"{self.name} ({self.status_type})"
 
-class Types(TimeStampedModel):
-    """
-    Flexible type management for various entities
-    """
-    entity = models.CharField(max_length=50)
-    type_name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        verbose_name_plural = "Types"
-        unique_together = ['entity', 'type_name']
-        indexes = [
-            models.Index(fields=['entity', 'type_name']),
-        ]
-
-    def __str__(self):
-        return f"{self.type_name} ({self.entity})"
-
 class FeatureFlags(TimeStampedModel):
     """
     Feature toggle management

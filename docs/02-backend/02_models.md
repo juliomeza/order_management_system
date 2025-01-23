@@ -18,16 +18,6 @@ This document focuses on the database models definition, detailing the core enti
 - **Purpose:** Centralized status management for all entities
 - **Usage:** Used by multiple entities for state management
 
-#### Types
-- **Columns:**
-  - id (Primary Key)
-  - entity (The entity this type applies to)
-  - typeName, description
-  - isActive
-  - createdDate, modifiedDate, createdByUser, modifiedByUser
-- **Purpose:** Flexible type management for various entities
-- **Usage:** Generic type classification system
-
 #### FeatureFlags
 - **Columns:**
   - id (Primary Key)
@@ -163,6 +153,17 @@ This document focuses on the database models definition, detailing the core enti
   - createdDate, modifiedDate, createdByUser, modifiedByUser
 - **Purpose:** Categorize orders by type and processing rules
 - **Relationships:** Referenced by Orders table
+
+
+#### OrderTypes
+- **Columns:**
+  - id (Primary Key)
+  - entity (The entity this type applies to)
+  - typeName, description
+  - isActive
+  - createdDate, modifiedDate, createdByUser, modifiedByUser
+- **Purpose:** Flexible type management for order
+- **Usage:** Generic type classification system
 
 #### Orders
 - **Columns:**

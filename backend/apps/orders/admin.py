@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderClass, OrderLine
+from .models import Order, OrderClass, OrderType, OrderLine
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -16,6 +16,13 @@ class OrderClassAdmin(admin.ModelAdmin):
     list_display = ('class_name', 'description')
     search_fields = ('class_name',)
     ordering = ('class_name',)
+    #list_filter = ('is_active',)
+
+@admin.register(OrderType)
+class OrderTypeAdmin(admin.ModelAdmin):
+    list_display = ('type_name', 'description')
+    search_fields = ('type_name',)
+    ordering = ('type_name',)
     #list_filter = ('is_active',)
 
 @admin.register(OrderLine)

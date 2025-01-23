@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Status, Types, FeatureFlags, Logs, AuditLogs, Role
+from .models import Status, FeatureFlags, Logs, AuditLogs, Role
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin):
@@ -7,13 +7,6 @@ class StatusAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code', 'status_type')
     ordering = ('status_type', 'name',)
     #list_filter = ('is_active', 'status_type')
-
-@admin.register(Types)
-class TypesAdmin(admin.ModelAdmin):
-    list_display = ('type_name', 'entity', 'is_active')
-    search_fields = ('type_name', 'entity')
-    ordering = ('entity', 'type_name')
-    #list_filter = ('is_active',)
 
 @admin.register(FeatureFlags)
 class FeatureFlagsAdmin(admin.ModelAdmin):

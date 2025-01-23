@@ -17,6 +17,21 @@ class OrderClass(TimeStampedModel):
     def __str__(self):
         return self.class_name
 
+
+class OrderType(TimeStampedModel):
+    """
+    Flexible type management for various entities
+    """
+    type_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name_plural = "Order Types"
+
+    def __str__(self):
+        return f"{self.type_name}"
+
 class Order(TimeStampedModel):
     """
     Core business transaction record
