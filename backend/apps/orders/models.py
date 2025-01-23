@@ -92,6 +92,11 @@ class Order(TimeStampedModel):
         null=True,
         blank=True
     )
+    contact = models.ForeignKey(
+        'logistics.Contact',
+        on_delete=models.PROTECT,
+        related_name='orders'
+    )
     shipping_address = models.ForeignKey(
         'logistics.Address',
         on_delete=models.PROTECT,

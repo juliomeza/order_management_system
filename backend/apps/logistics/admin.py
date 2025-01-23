@@ -1,5 +1,24 @@
 from django.contrib import admin
-from .models import Address, Warehouse, Carrier, CarrierService
+from .models import Contact, Address, ContactAddress, Warehouse, Carrier, CarrierService
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    def get_addresses(self, obj):
+        return ", ".join([str(addr) for addr in obj.addresses.all()])
+    get_addresses.short_description = 'Addresses'
+
+    list_display = ['first_name', 'last_name', 'email', 'phone', 'get_addresses', 'contact_type']
+    search_fields = ['first_name', 'last_name', 'email', 'phone']
+    ordering = ['last_name', 'first_name']
+    #raw_id_fields = ['address']
+    #list_filter = ['contact_type']
+
+@admin.register(ContactAddress)
+class ContactAddressAdmin(admin.ModelAdmin):
+    list_display = ['contact', 'address', 'is_primary', 'address_type']
+    list_filter = ['is_primary', 'address_type']
+    ordering = ['contact', 'address']
+    list_filter = []
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):

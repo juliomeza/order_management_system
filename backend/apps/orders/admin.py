@@ -6,7 +6,7 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.display(description='ORDER', ordering='lookup_code_order')
     def order(self, obj):
         return obj.lookup_code_order
-    list_display = ('project', 'order_type', 'warehouse', 'order', 'status', 'carrier', 'expected_delivery_date')
+    list_display = ('order', 'project', 'order_type', 'warehouse', 'status', 'carrier', 'expected_delivery_date')
     search_fields = ('lookup_code_order', 'lookup_code_shipment', 'project__name', 'warehouse__name', 'carrier__name')
     ordering = ('project', 'order_type', 'warehouse', 'lookup_code_order',)
     #list_filter = ('order_type', 'status', 'project', 'warehouse', 'carrier')
