@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, Customer, Project
 
+@admin.register(User)
 class CustomUserAdmin(BaseUserAdmin):
     # Campos para edición
     fieldsets = (
@@ -22,20 +23,16 @@ class CustomUserAdmin(BaseUserAdmin):
     ordering = ('project', 'email',)
     list_filter = [] # Desactivar filtros automáticos
 
-# Personalización de CustomerAdmin
+@admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('name', 'lookup_code', 'status', 'output_format')
     search_fields = ('name', 'lookup_code')
     ordering = ('name',)
     #list_filter = ('status', 'output_format')
 
+@admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('customer', 'name', 'lookup_code', 'orders_prefix', 'status', 'warehouse')
     search_fields = ('name', 'lookup_code', 'customer__name')
     ordering = ('customer', 'name',)
     #list_filter = ('status', 'customer', 'warehouse')
-
-# Re-registrar el modelo User
-admin.site.register(User, CustomUserAdmin)
-admin.site.register(Customer, CustomerAdmin)
-admin.site.register(Project, ProjectAdmin)
