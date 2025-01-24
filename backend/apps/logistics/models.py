@@ -46,16 +46,12 @@ class Address(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.address_line_1}, {self.city}, {self.state}"
+        return f"{self.address_line_1}, {self.city}, {self.state} {self.postal_code}"
 
 class Contact(TimeStampedModel):
     """
     Contact information management
     """
-    CONTACT_TYPES = [
-        ('primary', 'Primary'),
-        ('secondary', 'Secondary'),
-    ]
 
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -63,16 +59,11 @@ class Contact(TimeStampedModel):
     phone = models.CharField(max_length=20)
     mobile = models.CharField(max_length=20, blank=True)
     title = models.CharField(max_length=100, blank=True)
-    contact_type = models.CharField(
-        max_length=10,
-        choices=CONTACT_TYPES,
-        default='primary'
-    )
     addresses = models.ManyToManyField(
-        'Address',
-        through='ContactAddress',
-        related_name='contact_addresses'
-    )
+       'Address',
+       related_name='contacts',
+       blank=True
+   )
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -83,29 +74,6 @@ class Contact(TimeStampedModel):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-
-class ContactAddress(TimeStampedModel):
-    """
-    Manages the relationship between Contact and Address
-    """
-    contact = models.ForeignKey('Contact', on_delete=models.PROTECT)
-    address = models.ForeignKey('Address', on_delete=models.PROTECT)
-    is_primary = models.BooleanField(default=False)
-    address_type = models.CharField(
-        max_length=10,
-        choices=Address.ADDRESS_TYPES,
-        default='shipping'
-    )
-
-    class Meta:
-        unique_together = [['contact', 'address', 'address_type']]
-        indexes = [
-            models.Index(fields=['contact', 'is_primary']),
-            models.Index(fields=['address', 'address_type']),
-        ]
-
-    def __str__(self):
-        return f"{self.contact} - {self.address} ({self.address_type})"
 
 class Warehouse(TimeStampedModel):
     """

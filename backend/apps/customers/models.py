@@ -66,25 +66,19 @@ class Project(TimeStampedModel):
        on_delete=models.PROTECT,
        related_name='projects'
    )
-   warehouse = models.ForeignKey(
+   warehouses = models.ManyToManyField(
        'logistics.Warehouse',
-       on_delete=models.SET_NULL,
        related_name='projects',
-       null=True,
        blank=True
    )
-   carrier = models.ForeignKey(
+   carriers = models.ManyToManyField(
        'logistics.Carrier',
-       on_delete=models.SET_NULL,
-       related_name='projects',
-       null=True,
+       related_name='projects', 
        blank=True
    )
-   service = models.ForeignKey(
+   services = models.ManyToManyField(
        'logistics.CarrierService',
-       on_delete=models.SET_NULL,
        related_name='projects',
-       null=True,
        blank=True
    )
    notes = models.TextField(blank=True)
