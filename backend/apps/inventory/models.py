@@ -88,6 +88,7 @@ class MaterialPriceHistory(TimeStampedModel):
         indexes = [
             models.Index(fields=['material', 'effective_date', 'end_date']),
         ]
+    
     def __str__(self):
         return f"{self.material.name} - ${self.price} (from {self.effective_date.date()})"
 
