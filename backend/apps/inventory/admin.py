@@ -10,9 +10,9 @@ class UOMAdmin(admin.ModelAdmin):
 
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
-    list_display = ('project', 'name', 'lookup_code', 'status', 'type', 'price', 'uom')
+    list_display = ('name', 'lookup_code', 'status', 'type', 'price', 'uom', 'project')
     search_fields = ('name', 'lookup_code', 'project__name', 'status__name')
-    ordering = ('project', 'name',)
+    ordering = ('name',)
     #list_filter = ('status', 'project', 'uom')
 
 @admin.register(Inventory)

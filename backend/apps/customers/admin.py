@@ -35,4 +35,5 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('customer', 'name', 'lookup_code', 'orders_prefix', 'status')
     search_fields = ('name', 'lookup_code', 'customer__name')
     ordering = ('customer', 'name',)
+    autocomplete_fields = ['contacts']
     #list_filter = ('status', 'customer', 'warehouse')

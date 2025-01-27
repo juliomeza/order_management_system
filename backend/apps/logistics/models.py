@@ -22,8 +22,8 @@ class Address(TimeStampedModel):
     address_line_2 = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=50)
-    country = models.CharField(max_length=50)
     postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=50)
     
     entity_type = models.CharField(
         max_length=20,

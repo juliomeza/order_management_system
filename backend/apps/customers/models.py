@@ -81,6 +81,11 @@ class Project(TimeStampedModel):
        related_name='projects',
        blank=True
    )
+   contacts = models.ManyToManyField(
+       'logistics.Contact',
+       related_name='projects',
+       blank=True
+   )
    notes = models.TextField(blank=True)
 
    class Meta:
