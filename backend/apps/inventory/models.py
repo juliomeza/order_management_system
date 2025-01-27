@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
+from django.utils.timezone import now
 
 class UOM(TimeStampedModel):
     """
@@ -52,13 +53,14 @@ class Material(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='materials'
     )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
-    is_serialized = models.BooleanField(default=False)  
+    is_serialized = models.BooleanField(default=False)
+
+    def current_price(self):
+        price_history = self.price_history.filter(
+            effective_date__lte=now()
+        ).order_by('-effective_date').first()
+        return price_history.price if price_history else None
+    current_price.short_description = 'Current Price'
 
     class Meta:
         indexes = [
@@ -68,6 +70,26 @@ class Material(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name}"
+
+class MaterialPriceHistory(TimeStampedModel):
+    """
+    Price history for materials
+    """
+    material = models.ForeignKey(
+        Material,
+        on_delete=models.PROTECT,
+        related_name='price_history'
+    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    effective_date = models.DateTimeField()
+    end_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['material', 'effective_date', 'end_date']),
+        ]
+    def __str__(self):
+        return f"{self.material.name} - ${self.price} (from {self.effective_date.date()})"
 
 class Inventory(TimeStampedModel):
     """
