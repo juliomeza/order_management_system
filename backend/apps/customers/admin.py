@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, Customer, Project
+from apps.core.admin import TimeStampedModelAdmin
 
 @admin.register(User)
 class CustomUserAdmin(BaseUserAdmin):
@@ -24,14 +25,14 @@ class CustomUserAdmin(BaseUserAdmin):
     list_filter = [] # Desactivar filtros automáticos
 
 @admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
+class CustomerAdmin(TimeStampedModelAdmin):
     list_display = ('name', 'lookup_code', 'status', 'output_format')
     search_fields = ('name', 'lookup_code')
     ordering = ('name',)
     #list_filter = ('status', 'output_format')
 
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(TimeStampedModelAdmin):
     list_display = ('customer', 'name', 'lookup_code', 'orders_prefix', 'status')
     search_fields = ('name', 'lookup_code', 'customer__name')
     ordering = ('customer', 'name',)

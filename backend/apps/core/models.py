@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinLengthValidator
+from django.contrib.auth.models import AnonymousUser
 
 class TimeStampedModel(models.Model):
     """
@@ -24,6 +25,18 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+    
+    def save(self, *args, **kwargs):
+        user = getattr(self, '_current_user', None)
+        
+        if not self.pk:  # Si es una creación nueva
+            if user and not isinstance(user, AnonymousUser):
+                self.created_by_user = user
+        
+        if user and not isinstance(user, AnonymousUser):
+            self.modified_by_user = user
+            
+        super().save(*args, **kwargs)
 
 class Role(TimeStampedModel):
     """

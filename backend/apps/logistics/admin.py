@@ -1,8 +1,9 @@
 from django.contrib import admin
 from .models import Contact, Address, Warehouse, Carrier, CarrierService
+from apps.core.admin import TimeStampedModelAdmin
 
 @admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
+class ContactAdmin(TimeStampedModelAdmin):
     def get_addresses(self, obj):
         return ", ".join([str(addr) for addr in obj.addresses.all()])
     get_addresses.short_description = 'Addresses'
@@ -15,27 +16,27 @@ class ContactAdmin(admin.ModelAdmin):
     #list_filter = ['contact_type']
 
 @admin.register(Address)
-class AddressAdmin(admin.ModelAdmin):
+class AddressAdmin(TimeStampedModelAdmin):
     list_display = ('address_line_1', 'city', 'state', 'postal_code', 'country', 'entity_type', 'address_type')
     search_fields = ('address_line_1', 'city', 'state', 'postal_code''country')
     ordering = ('address_line_1', 'city','state')
     #list_filter = ('country', 'state', 'city', 'address_type')
 
 @admin.register(Warehouse)
-class WarehouseAdmin(admin.ModelAdmin):
+class WarehouseAdmin(TimeStampedModelAdmin):
     list_display = ('name', 'lookup_code', 'address', 'status')
     search_fields = ('name', 'lookup_code', 'address__address_line_1')
     ordering = ('name',)
     #list_filter = ('status',)
 
 @admin.register(Carrier)
-class CarrierAdmin(admin.ModelAdmin):
+class CarrierAdmin(TimeStampedModelAdmin):
     list_display = ('name', 'lookup_code')
     search_fields = ('name', 'lookup_code')
     ordering = ('name',)
 
 @admin.register(CarrierService)
-class CarrierServiceAdmin(admin.ModelAdmin):
+class CarrierServiceAdmin(TimeStampedModelAdmin):
     @admin.display(description='SERVICE')
     def service_name(self, obj):
         return obj.name
