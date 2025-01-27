@@ -55,8 +55,8 @@ class Contact(TimeStampedModel):
 
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    email = models.EmailField(validators=[EmailValidator()])
     phone = models.CharField(max_length=20)
+    email = models.EmailField(validators=[EmailValidator()], blank=True)
     mobile = models.CharField(max_length=20, blank=True)
     title = models.CharField(max_length=100, blank=True)
     addresses = models.ManyToManyField(

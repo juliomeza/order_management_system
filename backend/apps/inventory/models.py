@@ -13,7 +13,7 @@ class UOM(TimeStampedModel):
         unique=True,
         validators=[MinLengthValidator(2)]
     )
-    description = models.TextField(blank=True)
+    description = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name = "Unit of Measure"
@@ -35,7 +35,7 @@ class Material(TimeStampedModel):
         validators=[MinLengthValidator(2)]
     )
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    description = models.CharField(max_length=100, blank=True)
     project = models.ForeignKey(
         Project,
         on_delete=models.PROTECT,
@@ -47,18 +47,18 @@ class Material(TimeStampedModel):
         related_name='materials'
     )
     type = models.CharField(max_length=50)
-    is_serialized = models.BooleanField(default=False)
+    uom = models.ForeignKey(
+        UOM,
+        on_delete=models.PROTECT,
+        related_name='materials'
+    )
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=True,
         blank=True
     )
-    uom = models.ForeignKey(
-        UOM,
-        on_delete=models.PROTECT,
-        related_name='materials'
-    )
+    is_serialized = models.BooleanField(default=False)  
 
     class Meta:
         indexes = [
@@ -88,22 +88,17 @@ class Inventory(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='inventories'
     )
-    location = models.CharField(max_length=50)
+    location = models.CharField(max_length=50, blank=True)
     license_plate_id = models.CharField(
         max_length=50,
         unique=True,
+        blank=True,
         validators=[MinLengthValidator(2)]
     )
-    license_plate = models.CharField(max_length=50)
+    license_plate = models.CharField(max_length=50, blank=True)
     lot = models.CharField(max_length=50, blank=True)
     vendor_lot = models.CharField(max_length=50, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    last_updated = models.DateTimeField(auto_now=True)
-    updated_by_user = models.ForeignKey(
-        'customers.User',
-        on_delete=models.PROTECT,
-        related_name='inventory_updates'
-    )
 
     class Meta:
         verbose_name_plural = "Inventories"

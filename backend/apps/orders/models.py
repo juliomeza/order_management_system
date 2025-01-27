@@ -8,7 +8,7 @@ class OrderClass(TimeStampedModel):
     Categorize orders by type and processing rules
     """
     class_name = models.CharField(max_length=50)
-    description = models.TextField(blank=True)
+    description = models.CharField(max_length=50, blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:

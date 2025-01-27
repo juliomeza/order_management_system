@@ -55,7 +55,7 @@ class Status(TimeStampedModel):
     Centralized status management for all entities
     """
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    description = models.CharField(max_length=100, blank=True)
     code = models.CharField(
         max_length=50,
         validators=[MinLengthValidator(2)],

@@ -18,7 +18,7 @@ class MaterialAdmin(TimeStampedModelAdmin):
 
 @admin.register(Inventory)
 class InventoryAdmin(TimeStampedModelAdmin):
-    list_display = ('project', 'warehouse', 'material', 'location', 'license_plate_id', 'quantity', 'last_updated')
+    list_display = ('project', 'warehouse', 'material', 'location', 'license_plate_id', 'quantity')
     search_fields = ('material__name', 'warehouse__name', 'location', 'license_plate_id')
     ordering = ('project', 'warehouse', 'material', 'location', 'license_plate_id')
     #list_filter = ('warehouse', 'material', 'last_updated')
