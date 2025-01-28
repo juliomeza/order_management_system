@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 from apps.core.models import Status, Role, TimeStampedModel
 from apps.logistics.models import Warehouse, Carrier, CarrierService
-from apps.core.validators import validate_lookup_code
+from apps.core.validators import validate_lookup_code, StatusValidator
 
 class Customer(TimeStampedModel):
    """
@@ -23,7 +23,8 @@ class Customer(TimeStampedModel):
    status = models.ForeignKey(
        Status,
        on_delete=models.PROTECT,
-       related_name='customers'
+       related_name='customers',
+       validators=[StatusValidator('Global')]
    )
    address = models.ForeignKey(
        'logistics.Address',
@@ -60,7 +61,8 @@ class Project(TimeStampedModel):
    status = models.ForeignKey(
        Status,
        on_delete=models.PROTECT,
-       related_name='projects'
+       related_name='projects',
+       validators=[StatusValidator('Global')]
    )
    customer = models.ForeignKey(
        Customer,
@@ -108,6 +110,7 @@ class User(AbstractUser):
         Status,
         on_delete=models.PROTECT,
         related_name='users',
+        validators=[StatusValidator('Global')],
         null=True
     )
     project = models.ForeignKey(

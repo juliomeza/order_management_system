@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
 from django.db.models import Q
 import re
+from apps.core.models import Status
 
 def validate_lookup_code(value):
     """
@@ -31,22 +32,32 @@ class StatusValidator:
     Validates that the status matches the expected status type for the model.
     """
     def __init__(self, expected_status_type):
-        """
-        :param expected_status_type: The expected status type for the model.
-        """
         self.expected_status_type = expected_status_type
 
-    def __call__(self, status):
+    def __call__(self, status_id):
         """
         Validate the status type.
-        :param status: The status instance to validate.
+        :param status_id: The ID or instance of the Status model.
         """
-        if not status:
+        if not status_id:
             raise ValidationError(
                 _('Status cannot be null or empty.'),
                 code='missing_status'
             )
 
+        # Si es un número entero (ID), obtener la instancia de Status
+        if isinstance(status_id, int):
+            try:
+                status = Status.objects.get(pk=status_id)
+            except Status.DoesNotExist:
+                raise ValidationError(
+                    _('Invalid status. No matching status found.'),
+                    code='invalid_status'
+                )
+        else:
+            status = status_id
+
+        # Validar que el status_type coincida con el esperado
         if status.status_type != self.expected_status_type:
             raise ValidationError(
                 _('Invalid status type. Expected %(expected)s but got %(got)s.'),

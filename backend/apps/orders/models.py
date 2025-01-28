@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
-from apps.core.validators import validate_lookup_code
+from apps.core.validators import validate_lookup_code, StatusValidator
 
 class OrderClass(TimeStampedModel):
     """
@@ -60,7 +60,8 @@ class Order(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='orders'
+        related_name='orders',
+        validators=[StatusValidator('Orders')]
     )
     order_type = models.CharField(
         max_length=8,

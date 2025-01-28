@@ -3,7 +3,7 @@ from django.core.validators import MinLengthValidator
 from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
 from django.utils.timezone import now
-from apps.core.validators import validate_lookup_code
+from apps.core.validators import validate_lookup_code, StatusValidator
 
 class UOM(TimeStampedModel):
     """
@@ -46,7 +46,8 @@ class Material(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='materials'
+        related_name='materials',
+        validators=[StatusValidator('Global')]
     )
     type = models.CharField(max_length=50)
     uom = models.ForeignKey(
@@ -148,7 +149,8 @@ class InventorySerialNumber(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='serial_numbers'
+        related_name='serial_numbers',
+        validators=[StatusValidator('Global')]
     )
     license_plate = models.ForeignKey(
         Inventory,

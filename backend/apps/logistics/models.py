@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import EmailValidator
 from apps.core.models import TimeStampedModel, Status
-from apps.core.validators import validate_lookup_code
+from apps.core.validators import validate_lookup_code, StatusValidator
 
 class Address(TimeStampedModel):
     """
@@ -91,12 +91,13 @@ class Warehouse(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='warehouses'
     )
-    notes = models.TextField(blank=True)
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='warehouses'
+        related_name='warehouses',
+        validators=[StatusValidator('Global')]
     )
+    notes = models.TextField(blank=True)
 
     class Meta:
         indexes = [
