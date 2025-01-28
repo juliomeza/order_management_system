@@ -4,7 +4,7 @@ from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
 from django.utils.timezone import now
 from apps.core.validators import validate_lookup_code, StatusValidator
-from apps.inventory.validators import validate_date_hierarchy
+from apps.inventory.validators import validate_date_hierarchy, validate_unique_price_history
 
 class UOM(TimeStampedModel):
     """
@@ -97,8 +97,13 @@ class MaterialPriceHistory(TimeStampedModel):
         """
         Custom validation logic for date ranges.
         """
-        # Llama al validador directamente como función
         validate_date_hierarchy(self.effective_date, self.end_date)
+        validate_unique_price_history(
+            self.material, 
+            self.effective_date, 
+            self.end_date,
+            instance=self
+        )
 
     class Meta:
         indexes = [
