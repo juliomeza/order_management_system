@@ -23,8 +23,7 @@ class Customer(TimeStampedModel):
    status = models.ForeignKey(
        Status,
        on_delete=models.PROTECT,
-       related_name='customers',
-       validators=[StatusValidator('Global')]
+       related_name='customers'
    )
    address = models.ForeignKey(
        'logistics.Address',
@@ -38,6 +37,13 @@ class Customer(TimeStampedModel):
        default='JSON'
    )
    notes = models.TextField(blank=True)
+
+   def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Global')
+        validator(self.status)
 
    def __str__(self):
        return f"{self.name}"
@@ -61,8 +67,7 @@ class Project(TimeStampedModel):
    status = models.ForeignKey(
        Status,
        on_delete=models.PROTECT,
-       related_name='projects',
-       validators=[StatusValidator('Global')]
+       related_name='projects'
    )
    customer = models.ForeignKey(
        Customer,
@@ -91,6 +96,13 @@ class Project(TimeStampedModel):
    )
    notes = models.TextField(blank=True)
 
+   def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Global')
+        validator(self.status)
+
    class Meta:
        indexes = [
            models.Index(fields=['customer', 'status']),
@@ -110,7 +122,6 @@ class User(AbstractUser):
         Status,
         on_delete=models.PROTECT,
         related_name='users',
-        validators=[StatusValidator('Global')],
         null=True
     )
     project = models.ForeignKey(
@@ -130,6 +141,13 @@ class User(AbstractUser):
     # Fields required for extending AbstractUser
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+    def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Global')
+        validator(self.status)
 
     class Meta:
         indexes = [

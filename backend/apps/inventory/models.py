@@ -46,8 +46,7 @@ class Material(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='materials',
-        validators=[StatusValidator('Global')]
+        related_name='materials'
     )
     type = models.CharField(max_length=50)
     uom = models.ForeignKey(
@@ -63,6 +62,13 @@ class Material(TimeStampedModel):
         ).order_by('-effective_date').first()
         return price_history.price if price_history else None
     current_price.short_description = 'Current Price'
+
+    def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Global')
+        validator(self.status)
 
     class Meta:
         indexes = [
@@ -149,8 +155,7 @@ class InventorySerialNumber(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='serial_numbers',
-        validators=[StatusValidator('Global')]
+        related_name='serial_numbers'
     )
     license_plate = models.ForeignKey(
         Inventory,
@@ -158,6 +163,13 @@ class InventorySerialNumber(TimeStampedModel):
         related_name='serial_numbers'
     )
     notes = models.TextField(blank=True)
+
+    def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Global')
+        validator(self.status)
 
     class Meta:
         indexes = [

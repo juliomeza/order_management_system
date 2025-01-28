@@ -94,10 +94,16 @@ class Warehouse(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='warehouses',
-        validators=[StatusValidator('Global')]
+        related_name='warehouses'
     )
     notes = models.TextField(blank=True)
+
+    def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Global')
+        validator(self.status)
 
     class Meta:
         indexes = [

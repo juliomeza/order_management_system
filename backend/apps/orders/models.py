@@ -60,8 +60,7 @@ class Order(TimeStampedModel):
     status = models.ForeignKey(
         Status,
         on_delete=models.PROTECT,
-        related_name='orders',
-        validators=[StatusValidator('Orders')]
+        related_name='orders'
     )
     order_type = models.CharField(
         max_length=8,
@@ -118,6 +117,13 @@ class Order(TimeStampedModel):
     # Additional Fields
     expected_delivery_date = models.DateTimeField()
     notes = models.TextField(blank=True)
+
+    def clean(self):
+        """
+        Custom validation logic applied before saving.
+        """
+        validator = StatusValidator('Orders')
+        validator(self.status)
 
     class Meta:
         indexes = [
