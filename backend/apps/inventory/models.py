@@ -4,6 +4,7 @@ from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
 from django.utils.timezone import now
 from apps.core.validators import validate_lookup_code, StatusValidator
+from apps.inventory.validators import validate_date_hierarchy
 
 class UOM(TimeStampedModel):
     """
@@ -91,6 +92,13 @@ class MaterialPriceHistory(TimeStampedModel):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     effective_date = models.DateTimeField()
     end_date = models.DateTimeField(null=True, blank=True)
+
+    def clean(self):
+        """
+        Custom validation logic for date ranges.
+        """
+        # Llama al validador directamente como función
+        validate_date_hierarchy(self.effective_date, self.end_date)
 
     class Meta:
         indexes = [

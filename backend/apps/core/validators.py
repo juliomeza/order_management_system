@@ -68,36 +68,6 @@ class StatusValidator:
                 }
             )
 
-def validate_project_customer_hierarchy(project, customer=None):
-    """
-    Validates project-customer hierarchy relationships.
-    Can be called with just project (to validate its customer)
-    or with both project and customer (to validate they match).
-    """
-    if not project:
-        return
-        
-    if customer and project.customer != customer:
-        raise ValidationError(
-            _('Project %(project)s does not belong to customer %(customer)s'),
-            code='invalid_project_customer',
-            params={
-                'project': project,
-                'customer': customer
-            }
-        )
-
-def validate_date_hierarchy(start_date, end_date):
-    """
-    Validates that start_date comes before end_date.
-    Used for any model with date ranges.
-    """
-    if start_date and end_date and start_date > end_date:
-        raise ValidationError(
-            _('Start date must be before end date'),
-            code='invalid_date_range'
-        )
-
 class TimestampValidator:
     """
     Validates timestamp logical consistency in TimeStampedModel.
