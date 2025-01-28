@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UOM, MaterialPriceHistory, Material, Inventory, InventorySerialNumber
+from .models import UOM, MaterialPriceHistory, Material, MaterialType, Inventory, InventorySerialNumber
 from apps.core.admin import TimeStampedModelAdmin
 
 @admin.register(UOM)
@@ -29,6 +29,12 @@ class MaterialAdmin(TimeStampedModelAdmin):
     ordering = ('name',)
     inlines = [MaterialPriceHistoryInline]
     #list_filter = ('status', 'project', 'uom')
+
+@admin.register(MaterialType)
+class MaterialTypeAdmin(TimeStampedModelAdmin):
+    list_display = ('name', 'lookup_code', 'description')
+    search_fields = ('name', 'lookup_code')
+    ordering = ('name',)
 
 @admin.register(Inventory)
 class InventoryAdmin(TimeStampedModelAdmin):

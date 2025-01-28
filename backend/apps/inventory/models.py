@@ -28,6 +28,26 @@ class UOM(TimeStampedModel):
     def __str__(self):
         return f"{self.name} ({self.lookup_code})"
 
+class MaterialType(TimeStampedModel):
+    """
+    Define los tipos de materiales disponibles
+    """
+    name = models.CharField(max_length=50)
+    lookup_code = models.CharField(
+        max_length=50,
+        unique=True,
+        validators=[validate_lookup_code]
+    )
+    description = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['lookup_code']),
+        ]
+
+    def __str__(self):
+        return f"{self.name}"
+
 class Material(TimeStampedModel):
     """
     Product catalog management
@@ -49,7 +69,11 @@ class Material(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='materials'
     )
-    type = models.CharField(max_length=50)
+    type = models.ForeignKey(
+        MaterialType,
+        on_delete=models.PROTECT,
+        related_name='materials',
+    )
     uom = models.ForeignKey(
         UOM,
         on_delete=models.PROTECT,
