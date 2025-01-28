@@ -81,23 +81,3 @@ class TimestampValidator:
                 _('Modified date cannot be before created date'),
                 code='invalid_timestamp_order'
             )
-
-def validate_user_permissions(user, project):
-    """
-    Validates user has permissions for the given project.
-    Used in save() methods where user context is needed.
-    """
-    if not user:
-        return
-        
-    if not user.is_superuser:
-        if not user.project:
-            raise ValidationError(
-                _('User must be assigned to a project'),
-                code='no_project_assigned'
-            )
-        if user.project != project:
-            raise ValidationError(
-                _('User does not have permission for this project'),
-                code='invalid_project_permission'
-            )

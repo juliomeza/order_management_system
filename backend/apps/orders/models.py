@@ -3,6 +3,7 @@ from django.core.validators import MinLengthValidator
 from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
 from apps.core.validators import validate_lookup_code, StatusValidator
+from apps.orders.validators import validate_expected_delivery_date
 
 class OrderClass(TimeStampedModel):
     """
@@ -115,15 +116,19 @@ class Order(TimeStampedModel):
     )
 
     # Additional Fields
-    expected_delivery_date = models.DateTimeField()
+    expected_delivery_date = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(blank=True)
 
     def clean(self):
         """
         Custom validation logic applied before saving.
         """
+        # Validar el estado con StatusValidator
         validator = StatusValidator('Orders')
         validator(self.status)
+        
+        # Validar la expected_delivery_date
+        validate_expected_delivery_date(self)
 
     class Meta:
         indexes = [
