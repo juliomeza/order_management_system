@@ -3,6 +3,7 @@ from django.core.validators import MinLengthValidator
 from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
 from django.utils.timezone import now
+from apps.core.validators import validate_lookup_code
 
 class UOM(TimeStampedModel):
     """
@@ -12,7 +13,7 @@ class UOM(TimeStampedModel):
     lookup_code = models.CharField(
         max_length=20,
         unique=True,
-        validators=[MinLengthValidator(2)]
+        validators=[validate_lookup_code]
     )
     description = models.CharField(max_length=100, blank=True)
 
@@ -30,12 +31,12 @@ class Material(TimeStampedModel):
     """
     Product catalog management
     """
+    name = models.CharField(max_length=100)
     lookup_code = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)]
+        validators=[validate_lookup_code]
     )
-    name = models.CharField(max_length=100)
     description = models.CharField(max_length=100, blank=True)
     project = models.ForeignKey(
         Project,
@@ -141,7 +142,7 @@ class InventorySerialNumber(TimeStampedModel):
     lookup_code = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)],
+        validators=[validate_lookup_code],
         help_text="Serial number"
     )
     status = models.ForeignKey(

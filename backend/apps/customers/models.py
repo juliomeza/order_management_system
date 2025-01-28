@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 from apps.core.models import Status, Role, TimeStampedModel
 from apps.logistics.models import Warehouse, Carrier, CarrierService
+from apps.core.validators import validate_lookup_code
 
 class Customer(TimeStampedModel):
    """
@@ -17,7 +18,7 @@ class Customer(TimeStampedModel):
    lookup_code = models.CharField(
        max_length=50,
        unique=True,
-       validators=[MinLengthValidator(2)]
+       validators=[validate_lookup_code]
    )
    status = models.ForeignKey(
        Status,
@@ -48,7 +49,7 @@ class Project(TimeStampedModel):
    lookup_code = models.CharField(
        max_length=50,
        unique=True,
-       validators=[MinLengthValidator(2)]
+       validators=[validate_lookup_code]
    )
    orders_prefix = models.CharField(
        max_length=10,

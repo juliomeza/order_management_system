@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 from apps.core.models import TimeStampedModel, Status
 from apps.customers.models import Project
+from apps.core.validators import validate_lookup_code
 
 class OrderClass(TimeStampedModel):
     """
@@ -45,13 +46,13 @@ class Order(TimeStampedModel):
     lookup_code_order = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)],
+        validators=[validate_lookup_code],
         help_text="Unique order identifier"
     )
     lookup_code_shipment = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)],
+        validators=[validate_lookup_code],
         help_text="Unique shipment identifier"
     )
 

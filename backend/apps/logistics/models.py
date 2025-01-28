@@ -1,6 +1,7 @@
 from django.db import models
-from django.core.validators import MinLengthValidator, EmailValidator
+from django.core.validators import EmailValidator
 from apps.core.models import TimeStampedModel, Status
+from apps.core.validators import validate_lookup_code
 
 class Address(TimeStampedModel):
     """
@@ -83,7 +84,7 @@ class Warehouse(TimeStampedModel):
     lookup_code = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)]
+        validators=[validate_lookup_code]
     )
     address = models.ForeignKey(
         Address,
@@ -113,7 +114,7 @@ class Carrier(TimeStampedModel):
     lookup_code = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)]
+        validators=[validate_lookup_code]
     )
 
     class Meta:
@@ -132,7 +133,7 @@ class CarrierService(TimeStampedModel):
     lookup_code = models.CharField(
         max_length=50,
         unique=True,
-        validators=[MinLengthValidator(2)]
+        validators=[validate_lookup_code]
     )
     carrier = models.ForeignKey(
         Carrier,
