@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.contrib.auth.models import AnonymousUser
 
+
 class TimeStampedModel(models.Model):
     """
     An abstract base class model that provides self-updating
@@ -25,6 +26,13 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+    
+    def clean(self):
+        """
+        Ensures timestamp consistency.
+        """
+        from apps.core.validators import TimestampValidator
+        TimestampValidator()(self)
     
     def save(self, *args, **kwargs):
         user = getattr(self, '_current_user', None)
