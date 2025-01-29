@@ -1,9 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import RegexValidator
-from django.db.models import Q
 import re
 from apps.core.models import Status
+import logging
+
+logger = logging.getLogger('custom_logger')
 
 def validate_lookup_code(value):
     """
@@ -14,17 +15,17 @@ def validate_lookup_code(value):
     """
     # Verificar longitud mínima
     if len(value) < 2:
+        logger.warning(f"Validation failed: lookup_code '{value}' is too short.")
         raise ValidationError(
-            _('Lookup code must be at least 2 characters long and can only contain letters, numbers, underscores, and hyphens.'),
-            code='min_length'
-        )
+            _('Lookup code must be at least 2 characters long.'),
+            code='min_length')
     
     # Verificar caracteres permitidos
     if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$', value):
+        logger.warning(f"Validation failed: lookup_code '{value}' contains invalid characters.")
         raise ValidationError(
             _('Lookup code can only contain letters, numbers, underscores, and hyphens.'),
-            code='invalid_lookup_code'
-        )
+            code='invalid_lookup_code')
 
 class StatusValidator:
     """
@@ -40,6 +41,7 @@ class StatusValidator:
         :param status_id: The ID or instance of the Status model.
         """
         if not status_id:
+            logger.warning("Validation failed: Status ID is missing or null.")
             raise ValidationError(
                 _('Status cannot be null or empty.'),
                 code='missing_status'
@@ -50,6 +52,7 @@ class StatusValidator:
             try:
                 status = Status.objects.get(pk=status_id)
             except Status.DoesNotExist:
+                logger.error(f"Validation failed: Status ID {status_id} does not exist.")
                 raise ValidationError(
                     _('Invalid status. No matching status found.'),
                     code='invalid_status'
@@ -59,6 +62,7 @@ class StatusValidator:
 
         # Validar que el status_type coincida con el esperado
         if status.status_type != self.expected_status_type:
+            logger.warning(f"Validation failed: Expected status_type '{self.expected_status_type}', but got '{status.status_type}'.")
             raise ValidationError(
                 _('Invalid status type. Expected %(expected)s but got %(got)s.'),
                 code='invalid_status_type',
@@ -77,6 +81,10 @@ class TimestampValidator:
         if (model_instance.modified_date and 
             model_instance.created_date and
             model_instance.modified_date < model_instance.created_date):
+            logger.error(
+                f"Validation failed: modified_date ({model_instance.modified_date}) "
+                f"is before created_date ({model_instance.created_date})."
+            )
             raise ValidationError(
                 _('Modified date cannot be before created date'),
                 code='invalid_timestamp_order'

@@ -143,7 +143,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'format': '{levelname} {asctime} [{pathname}:{lineno}] {funcName} (PID {process:d}, TID {thread:d}) - {message}',
             'style': '{',
         },
         'simple': {
@@ -153,7 +153,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'ERROR',
+            'level': 'WARNING', # Guarda WARNING y ERROR. Cambiar a ERROR mas adelante.
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs' / 'errors.log',
             'formatter': 'verbose',
