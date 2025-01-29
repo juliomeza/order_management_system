@@ -25,8 +25,7 @@ class OrderType(TimeStampedModel):
     Flexible type management for various entities
     """
     type_name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
+    description = models.CharField(blank=True)
 
     class Meta:
         verbose_name_plural = "Order Types"
@@ -63,10 +62,16 @@ class Order(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='orders'
     )
-    order_type = models.CharField(
-        max_length=8,
-        choices=ORDER_TYPES,
+    order_type = models.ForeignKey(
+        OrderType,
+        on_delete=models.PROTECT,
+        related_name='orders',
         help_text="INBOUND: Receiving inventory, OUTBOUND: Shipping to customers"
+    )
+    order_class = models.ForeignKey(
+        OrderClass,
+        on_delete=models.PROTECT,
+        related_name='orders'
     )
 
     # Foreign Keys
@@ -79,20 +84,6 @@ class Order(TimeStampedModel):
         'logistics.Warehouse',
         on_delete=models.PROTECT,
         related_name='orders'
-    )
-    carrier = models.ForeignKey(
-        'logistics.Carrier',
-        on_delete=models.PROTECT,
-        related_name='orders',
-        null=True,
-        blank=True
-    )
-    service_type = models.ForeignKey(
-        'logistics.CarrierService',
-        on_delete=models.PROTECT,
-        related_name='orders',
-        null=True,
-        blank=True
     )
     contact = models.ForeignKey(
         'logistics.Contact',
@@ -109,10 +100,19 @@ class Order(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='billing_orders'
     )
-    order_class = models.ForeignKey(
-        OrderClass,
+    carrier = models.ForeignKey(
+        'logistics.Carrier',
         on_delete=models.PROTECT,
-        related_name='orders'
+        related_name='orders',
+        null=True,
+        blank=True
+    )
+    service_type = models.ForeignKey(
+        'logistics.CarrierService',
+        on_delete=models.PROTECT,
+        related_name='orders',
+        null=True,
+        blank=True
     )
 
     # Additional Fields
