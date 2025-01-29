@@ -1,6 +1,4 @@
 from pathlib import Path
-import os
-import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -145,7 +143,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
         'simple': {
@@ -156,12 +154,14 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/errors.log'),
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'errors.log',
             'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
         },
         'console': {
-            'level': 'INFO',  # Solo mostrar INFO, WARNING, ERROR y CRITICAL en consola
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
@@ -169,17 +169,17 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'WARNING',  # Reduce los logs de Django en consola
+            'level': 'WARNING',
             'propagate': True,
         },
-        'django.db.backends': {  # Silencia los logs de SQL
+        'django.db.backends': {
             'handlers': ['file'],
             'level': 'WARNING',
             'propagate': False,
         },
         'custom_logger': {
             'handlers': ['file', 'console'],
-            'level': 'DEBUG',  # Personalizado, puedes usarlo en validaciones o lógica específica
+            'level': 'DEBUG',
             'propagate': False,
         },
     },
