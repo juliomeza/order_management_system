@@ -12,20 +12,25 @@ order_management_system/
 │   │   ├── local.txt                 # Development dependencies
 │   │   └── production.txt            # Production dependencies
 │   ├── config/
-│   │   ├── settings/
-│   │   │   ├── __init__.py
-│   │   │   ├── base.py               # Base settings
-│   │   │   ├── local.py              # Development settings
-│   │   │   └── production.py         # Production settings
+│   │   ├── asgi.py                   # ASGI configuration
+│   │   ├── settings.py               # Base settings
 │   │   ├── urls.py                   # Main URLs
-│   │   ├── wsgi.py                   # WSGI configuration
-│   │   └── asgi.py                   # ASGI configuration
+│   │   └── wsgi.py                   # WSGI configuration
 │   ├── apps/
 │   │   ├── core/                     # Shared models
 │   │   ├── customers/                # Customer-related functionality
-│   │   │   ├── api/                  # API endpoints
-│   │   │   ├── models/               # Data models
-│   │   │   └── services/             # Business logic
+│   │   │   ├── api/                  # API
+│   │   │   │   ├── serializers/                    
+│   │   │   │   ├── views/
+│   │   │   │   ├── urls.py
+│   │   │   │   └── filters.py
+│   │   │   ├── services/             # Business logic
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py
+│   │   │   ├── tests.py
+│   │   │   ├── validators.py
+│   │   │   └── views.py
 │   │   ├── inventory/                # Inventory-specific logic
 │   │   ├── orders/                   # Order-specific logic
 │   │   └── logistics/                # Transportation-specific logic
@@ -36,8 +41,10 @@ order_management_system/
 │   │   │   └── rbac.py               # Middleware for role-based access control
 │   │   └── utils/                    # Utility functions
 │   └── audit/
-│       ├── logging.py                # Centralized logging configuration
-│       └── audit_logs.py             # Audit trail implementation
+│       ├── handlers/
+│       ├── formatters/
+│       ├── middleware/
+│       └── loggers/
 
 ├── frontend/
 │   ├── .env                          # Local environment variables
