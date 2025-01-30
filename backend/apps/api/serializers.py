@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.orders.models import Order, OrderLine
 import logging
+from django.db import transaction
 
 logger = logging.getLogger('custom_logger')
 
@@ -31,10 +32,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         lines_data = validated_data.pop('lines')
-        order = Order.objects.create(**validated_data)
-        
-        for line_data in lines_data:
-            OrderLine.objects.create(order=order, **line_data)
-        
-        logger.info(f"Order created successfully: {order.lookup_code_order} with {len(lines_data)} lines.")
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)
+            for line_data in lines_data:
+                OrderLine.objects.create(order=order, **line_data)
+            logger.info(f"Order created successfully: {order.lookup_code_order} with {len(lines_data)} lines.")
         return order
