@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'apps.inventory',
     'apps.orders',
     'apps.logistics',
+    'apps.api',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
