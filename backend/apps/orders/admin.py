@@ -2,6 +2,12 @@ from django.contrib import admin
 from .models import Order, OrderClass, OrderType, OrderLine
 from apps.core.admin import TimeStampedModelAdmin
 
+class OrderLineInline(admin.TabularInline):
+    model = OrderLine
+    extra = 0
+    fields = ('material', 'quantity', 'license_plate', 'serial_number', 'lot', 'vendor_lot')
+    can_delete = False
+
 @admin.register(Order)
 class OrderAdmin(TimeStampedModelAdmin):
     @admin.display(description='ORDER', ordering='lookup_code_order')
@@ -10,14 +16,13 @@ class OrderAdmin(TimeStampedModelAdmin):
     list_display = ('order', 'project', 'order_type', 'warehouse', 'status', 'carrier', 'expected_delivery_date')
     search_fields = ('lookup_code_order', 'lookup_code_shipment', 'project__name', 'warehouse__name', 'carrier__name')
     ordering = ('project', 'order_type', 'warehouse', 'lookup_code_order',)
-    #list_filter = ('order_type', 'status', 'project', 'warehouse', 'carrier')
+    inlines = [OrderLineInline]
 
 @admin.register(OrderClass)
 class OrderClassAdmin(TimeStampedModelAdmin):
     list_display = ('class_name', 'description')
     search_fields = ('class_name',)
     ordering = ('class_name',)
-    #list_filter = ('is_active',)
 
 @admin.register(OrderType)
 class OrderTypeAdmin(TimeStampedModelAdmin):
