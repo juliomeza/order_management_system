@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,6 +35,8 @@ INSTALLED_APPS = [
     'apps.logistics',
     'apps.api',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -185,4 +188,20 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+# DRF Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# JWT Configuration
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Token de acceso válido por 15 min
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Token de refresco válido por 7 días
+    "ROTATE_REFRESH_TOKENS": True,  # Genera un nuevo refresh token en cada uso
+    "BLACKLIST_AFTER_ROTATION": True,  # Evita reutilización de refresh tokens antiguos
+    "AUTH_HEADER_TYPES": ("Bearer",),  # Se usará `Bearer <token>` en los headers
 }

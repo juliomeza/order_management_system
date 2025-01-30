@@ -1,18 +1,26 @@
 import logging
+from apps.orders.models import Order
+from .serializers import OrderSerializer
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from apps.orders.models import Order, OrderLine
-from .serializers import OrderSerializer, OrderLineSerializer
 
 # Configure logger
 logger = logging.getLogger('custom_logger')
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def get_or_create_orders(request):
     """
-    GET: Returns the list of orders in JSON format.
+    GET: Retrieves the list of orders in JSON format.
+    - Requires authentication.
+    - Returns all orders along with their related line items.
+
     POST: Creates a new order in the database.
+    - Requires authentication.
+    - Validates and saves the order if the request data is correct.
     """
     try:
         if request.method == 'GET':

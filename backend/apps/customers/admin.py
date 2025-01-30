@@ -21,7 +21,7 @@ class CustomUserAdmin(BaseUserAdmin):
     # Campos visibles en la lista de usuarios
     list_display = ('project', 'full_name', 'email', 'role', 'status', 'is_staff')
     search_fields = ('email', 'first_name', 'last_name', 'full_name')
-    ordering = ('project', 'email',)
+    ordering = ('project', 'first_name', 'last_name')
     list_filter = [] # Desactivar filtros automáticos
 
 @admin.register(Customer)
