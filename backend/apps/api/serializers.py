@@ -42,6 +42,20 @@ class OrderSerializer(serializers.ModelSerializer):
         if "carrier" in data and data["carrier"] is not None:
             if data["carrier"] not in user.project.carriers.all():
                 raise serializers.ValidationError({"carrier": "You can only use carriers assigned to your project."})
+        
+        # ✅ Validate service_type belongs to the selected carrier
+        if "service_type" in data and data["service_type"] is not None:
+            if data["service_type"] not in data["carrier"].services.all():
+                raise serializers.ValidationError({"service_type": "This service type is not available for the selected carrier."})
+
+            # ✅ Validate service_type belongs to the user's project (NEW)
+            if data["service_type"] not in user.project.services.all():
+                raise serializers.ValidationError({"service_type": "This service type is not assigned to your project."})
+
+        # ✅ Validate contact belongs to user's project
+        if "contact" in data and data["contact"] is not None:
+            if data["contact"] not in user.project.contacts.all():
+                raise serializers.ValidationError({"contact": "You can only select contacts assigned to your project."})
 
         # ✅ Ensure at least one order line is provided
         if not data.get('lines') or len(data.get('lines')) == 0:
