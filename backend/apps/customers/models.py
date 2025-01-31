@@ -122,7 +122,8 @@ class User(AbstractUser):
         Status,
         on_delete=models.PROTECT,
         related_name='users',
-        null=True
+        null=True,
+        default=lambda: Status.objects.get(name="Active")
     )
     project = models.ForeignKey(
         Project,

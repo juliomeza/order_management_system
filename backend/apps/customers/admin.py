@@ -19,9 +19,9 @@ class CustomUserAdmin(BaseUserAdmin):
     full_name.short_description = 'Full Name'
 
     # Campos visibles en la lista de usuarios
-    list_display = ('project', 'full_name', 'email', 'role', 'status', 'is_staff')
+    list_display = ('full_name', 'email', 'role', 'status', 'project', 'is_staff')
     search_fields = ('email', 'first_name', 'last_name', 'full_name')
-    ordering = ('project', 'first_name', 'last_name')
+    ordering = ('first_name', 'last_name')
     list_filter = [] # Desactivar filtros automáticos
 
 class ProjectInline(admin.TabularInline):
