@@ -19,21 +19,21 @@ def get_or_create_orders(request):
     """
     try:
         if request.method == 'GET':
-            # ✅ Filter orders based on user's customer
+            # Filter orders based on user's customer
             user = request.user
             orders = Order.objects.filter(project__customer=user.project.customer)
-            serializer = OrderSerializer(orders, many=True)
+            serializer = OrderSerializer(orders, many=True, context={'request': request})
             return Response(serializer.data)
 
         elif request.method == 'POST':
             user = request.user
             data = request.data
 
-            # ✅ Restrict creation to only allowed projects
+            # Restrict creation to only allowed projects
             if data.get("project") and int(data["project"]) != user.project.id:
                 return Response({"error": "You can only create orders for your assigned project."}, status=status.HTTP_403_FORBIDDEN)
 
-            serializer = OrderSerializer(data=data)
+            serializer = OrderSerializer(data=data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 logger.info(f"Order successfully created: {serializer.data}")

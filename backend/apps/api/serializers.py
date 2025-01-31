@@ -22,12 +22,32 @@ class OrderSerializer(serializers.ModelSerializer):
                  'service_type', 'expected_delivery_date', 'notes', 'lines']
     
     def validate(self, data):
-        # Verificar que hay al menos una línea
+        user = self.context['request'].user  # Get authenticated user
+
+        # ✅ Validate that the selected project belongs to the user
+        if data["project"].customer != user.project.customer:
+            raise serializers.ValidationError({"project": "You can only create orders for your assigned customer."})
+
+        # ✅ Validate materials belong to user's project
+        for line in data.get("lines", []):
+            if line["material"].project != user.project:
+                raise serializers.ValidationError({"lines": "You can only use materials assigned to your project."})
+
+        # ✅ Validate warehouse belongs to user's project
+        if "warehouse" in data and data["warehouse"] is not None:
+            if data["warehouse"] not in user.project.warehouses.all():
+                raise serializers.ValidationError({"warehouse": "You can only use warehouses assigned to your project."})
+
+        # ✅ Validate carrier belongs to user's project
+        if "carrier" in data and data["carrier"] is not None:
+            if data["carrier"] not in user.project.carriers.all():
+                raise serializers.ValidationError({"carrier": "You can only use carriers assigned to your project."})
+
+        # ✅ Ensure at least one order line is provided
         if not data.get('lines') or len(data.get('lines')) == 0:
             logger.warning("Validation failed: No order lines provided.")
-            raise serializers.ValidationError(
-                {"lines": "At least one order line is required"}
-            )
+            raise serializers.ValidationError({"lines": "At least one order line is required."})
+
         return data
 
     def create(self, validated_data):
