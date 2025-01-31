@@ -24,17 +24,24 @@ class CustomUserAdmin(BaseUserAdmin):
     ordering = ('project', 'first_name', 'last_name')
     list_filter = [] # Desactivar filtros automáticos
 
+class ProjectInline(admin.TabularInline):
+    model = Project
+    extra = 0
+    fields = ('name', 'lookup_code', 'orders_prefix', 'status')
+    can_delete = False
+
 @admin.register(Customer)
 class CustomerAdmin(TimeStampedModelAdmin):
     list_display = ('name', 'lookup_code', 'status', 'output_format')
     search_fields = ('name', 'lookup_code')
     ordering = ('name',)
+    inlines = [ProjectInline]
     #list_filter = ('status', 'output_format')
 
 @admin.register(Project)
 class ProjectAdmin(TimeStampedModelAdmin):
-    list_display = ('customer', 'name', 'lookup_code', 'orders_prefix', 'status')
+    list_display = ('name', 'lookup_code', 'orders_prefix', 'status', 'customer')
     search_fields = ('name', 'lookup_code', 'customer__name')
-    ordering = ('customer', 'name',)
+    ordering = ('name',)
     autocomplete_fields = ['contacts']
     #list_filter = ('status', 'customer', 'warehouse')
