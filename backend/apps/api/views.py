@@ -1,6 +1,7 @@
 import logging
 from apps.orders.models import Order
-from .serializers import OrderSerializer
+from apps.logistics.models import Contact
+from .serializers import OrderSerializer, ContactSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -10,6 +11,7 @@ from rest_framework import status
 # Configure logger
 logger = logging.getLogger('custom_logger')
 
+# Get or create orders
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def get_or_create_orders(request):
@@ -45,3 +47,27 @@ def get_or_create_orders(request):
     except Exception as e:
         logger.error(f"Unexpected error in get_or_create_orders: {str(e)}", exc_info=True)
         return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Get or create contacts
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def get_or_create_contacts(request):
+    """
+    GET: Retrieves all contacts associated with the authenticated user's project.
+    POST: Allows a user to create a contact for their assigned project.
+    """
+    user = request.user
+
+    if request.method == 'GET':
+        # ✅ Retrieve all contacts linked to the user's project
+        contacts = user.project.contacts.all()
+        serializer = ContactSerializer(contacts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        # ✅ Create a new contact
+        serializer = ContactSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

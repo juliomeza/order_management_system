@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from apps.orders.models import Order, OrderLine
+from apps.logistics.models import Contact, Address
 import logging
 from django.db import transaction
 
 logger = logging.getLogger('custom_logger')
 
+# Create a new order with order lines
 class OrderLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderLine
@@ -72,3 +74,55 @@ class OrderSerializer(serializers.ModelSerializer):
                 OrderLine.objects.create(order=order, **line_data)
             logger.info(f"Order created successfully: {order.lookup_code_order} with {len(lines_data)} lines.")
         return order
+
+# Create new contact with addressess
+class AddressSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and managing shipping and billing addresses.
+    """
+
+    entity_type = serializers.CharField(required=False)
+
+    class Meta:
+        model = Address
+        fields = ['id', 'address_line_1', 'address_line_2', 'city', 'state', 'postal_code', 'country', 'address_type', 'entity_type', 'notes']
+
+    def create(self, validated_data):
+        """
+        Assign the new address to the authenticated user's customer.
+        """
+        user = self.context['request'].user
+        validated_data['entity_type'] = 'recipient'  # ✅ Ensure the address is linked to a customer
+        address = Address.objects.create(**validated_data)
+        return address
+
+class ContactSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and managing project contacts along with multiple addresses.
+    """
+    addresses = AddressSerializer(many=True, required=False)  # ✅ Allow multiple addresses in one request
+
+    class Meta:
+        model = Contact
+        fields = ['id', 'first_name', 'last_name', 'phone', 'email', 'mobile', 'title', 'addresses', 'notes']
+
+    def create(self, validated_data):
+        """
+        Assign the new contact to the authenticated user's project and create associated addresses.
+        """
+        user = self.context['request'].user
+        addresses_data = validated_data.pop('addresses', [])  # ✅ Extract addresses from request
+
+        # ✅ Crear el contacto sin el project (porque es ManyToMany)
+        contact = Contact.objects.create(**validated_data)
+
+        # ✅ Asociar el contacto con el proyecto del usuario
+        user.project.contacts.add(contact)  
+
+        # ✅ Crear y asociar direcciones al contacto
+        for address_data in addresses_data:
+            address_data['entity_type'] = 'recipient'  # ✅ Ensure it's for a recipient
+            address = Address.objects.create(**address_data)
+            contact.addresses.add(address)  # ✅ Link address to contact
+
+        return contact
