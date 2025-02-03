@@ -2,9 +2,17 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, Customer, Project
 from apps.core.admin import TimeStampedModelAdmin
+from apps.core.models import Status
 
 @admin.register(User)
 class CustomUserAdmin(BaseUserAdmin):
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'username', 'password1', 'password2', 'first_name', 'last_name', 'status', 'role', 'project'),
+        }),
+    )
+    
     # Campos para edición
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
@@ -12,6 +20,12 @@ class CustomUserAdmin(BaseUserAdmin):
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}), # Add it if needed: , 'groups', 'user_permissions'
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if not obj:  # Si es un nuevo usuario
+            form.base_fields['status'].initial = Status.objects.get(name="Active")
+        return form
     
     # Método personalizado para mostrar nombre completo
     def full_name(self, obj):

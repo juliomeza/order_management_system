@@ -123,7 +123,7 @@ class User(AbstractUser):
         on_delete=models.PROTECT,
         related_name='users',
         null=True,
-        default=lambda: Status.objects.get(name="Active")
+        #default=lambda: Status.objects.get(name="Active")
     )
     project = models.ForeignKey(
         Project,
