@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.orders.models import Order, OrderLine
 from apps.logistics.models import Contact, Address
+from apps.inventory.models import Inventory
 import logging
 from django.db import transaction
 
@@ -29,16 +30,29 @@ class OrderSerializer(serializers.ModelSerializer):
         # ✅ Validate that the selected project belongs to the user
         if data["project"].customer != user.project.customer:
             raise serializers.ValidationError({"project": "You can only create orders for your assigned customer."})
-
-        # ✅ Validate materials belong to user's project
-        for line in data.get("lines", []):
-            if line["material"].project != user.project:
-                raise serializers.ValidationError({"lines": "You can only use materials assigned to your project."})
-
+        
         # ✅ Validate warehouse belongs to user's project
         if "warehouse" in data and data["warehouse"] is not None:
             if data["warehouse"] not in user.project.warehouses.all():
                 raise serializers.ValidationError({"warehouse": "You can only use warehouses assigned to your project."})
+
+        # ✅ Validate materials belong to user's project + Check inventory
+        for line in data.get("lines", []):
+            if line["material"].project != user.project:
+                raise serializers.ValidationError({"lines": "You can only use materials assigned to your project."})
+
+            # 🛑 Validate inventory available
+            inventory = Inventory.objects.filter(
+                material=line["material"],
+                warehouse=data["warehouse"]
+            ).first()
+
+            available_quantity = inventory.quantity if inventory else 0
+
+            if line["quantity"] > available_quantity:
+                raise serializers.ValidationError({
+                    "lines": f"Not enough inventory for {line['material'].name}. Requested: {line['quantity']}, Available: {available_quantity}."
+                })
 
         # ✅ Validate carrier belongs to user's project
         if "carrier" in data and data["carrier"] is not None:
