@@ -5,8 +5,8 @@ from .serializers import OrderSerializer, ContactSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+from apps.core.exceptions import BusinessLogicError
 
 # Configure logger
 logger = logging.getLogger('custom_logger')
@@ -19,34 +19,29 @@ def get_or_create_orders(request):
     GET: Retrieves only the orders that belong to the authenticated user's customer.
     POST: Creates a new order only if the user is allowed to create it within their customer and project.
     """
-    try:
-        if request.method == 'GET':
-            # Filter orders based on user's customer
-            user = request.user
-            orders = Order.objects.filter(project__customer=user.project.customer)
-            serializer = OrderSerializer(orders, many=True, context={'request': request})
-            return Response(serializer.data)
+    user = request.user
 
-        elif request.method == 'POST':
-            user = request.user
-            data = request.data
+    if request.method == 'GET':
+        # ✅ Retrieve only orders for the authenticated user's customer
+        orders = Order.objects.filter(project__customer=user.project.customer)
+        serializer = OrderSerializer(orders, many=True, context={'request': request})
+        return Response(serializer.data)
 
-            # Restrict creation to only allowed projects
-            if data.get("project") and int(data["project"]) != user.project.id:
-                return Response({"error": "You can only create orders for your assigned project."}, status=status.HTTP_403_FORBIDDEN)
+    elif request.method == 'POST':
+        data = request.data
 
-            serializer = OrderSerializer(data=data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                logger.info(f"Order successfully created: {serializer.data}")
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                logger.warning(f"Validation error when creating order: {serializer.errors}")
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    except Exception as e:
-        logger.error(f"Unexpected error in get_or_create_orders: {str(e)}", exc_info=True)
-        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # ✅ Restrict creation to only allowed projects
+        if data.get("project") and int(data["project"]) != user.project.id:
+            raise BusinessLogicError(detail="You can only create orders for your assigned project.")
+
+        serializer = OrderSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            order = serializer.save()
+            logger.info(f"Order successfully created: {order.lookup_code_order}")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        raise BusinessLogicError(detail=serializer.errors)  # Use standardized error
+
 
 # Get or create contacts
 @api_view(['GET', 'POST'])
@@ -68,6 +63,8 @@ def get_or_create_contacts(request):
         # ✅ Create a new contact
         serializer = ContactSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            contact = serializer.save()
+            logger.info(f"Contact successfully created: {contact.id}")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        raise BusinessLogicError(detail=serializer.errors)  # Use standardized error
