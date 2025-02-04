@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.test import APITestCase
 from apps.api.tests.factories import UserFactory
 
-class OrderSerializerTest(APITestCase):
+class TokenAuthenticationTest(APITestCase):
     def setUp(self):
         """Set up auth test data"""
         self.user = UserFactory()
