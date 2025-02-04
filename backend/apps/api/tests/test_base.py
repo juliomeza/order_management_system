@@ -143,7 +143,7 @@ class BaseAPITestCase(APITestCase):
             state="FL",
             postal_code="33101",
             country="USA",
-            entity_type="customer",
+            entity_type="recipient",
             address_type="shipping"
         )
 
@@ -153,7 +153,7 @@ class BaseAPITestCase(APITestCase):
             state="FL",
             postal_code="33102",
             country="USA",
-            entity_type="customer",
+            entity_type="recipient",
             address_type="billing"
         )
 

@@ -1,67 +1,13 @@
-from rest_framework.test import APITestCase
 from rest_framework import status
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
-from apps.core.models import Status
-from apps.customers.models import Project, Customer
 from apps.logistics.models import Contact, Address
+from .test_base import BaseAPITestCase
 
-User = get_user_model()
-
-class ContactAPITestCase(APITestCase):
+class ContactAPITestCase(BaseAPITestCase):
     def setUp(self):
-        # Create status
-        self.status = Status.objects.create(
-            name="Active",
-            code="ACTIVE",
-            status_type="Global",
-            is_active=True
-        )
-
-        # Create customer
-        self.customer = Customer.objects.create(
-            name="Test Customer",
-            lookup_code="CUST001",
-            status=self.status
-        )
-
-        # Create project
-        self.project = Project.objects.create(
-            name="Test Project",
-            lookup_code="PRJ001",
-            orders_prefix="TP",
-            customer=self.customer,
-            status=self.status
-        )
-
-        # Create secondary project for testing restrictions
-        self.other_customer = Customer.objects.create(
-            name="Other Customer",
-            lookup_code="CUST002",
-            status=self.status
-        )
+        super().setUp()
+        Contact.objects.all().delete()
+        Address.objects.filter(entity_type='recipient').delete()
         
-        self.other_project = Project.objects.create(
-            name="Other Project",
-            lookup_code="PRJ002",
-            orders_prefix="OP",
-            customer=self.other_customer,
-            status=self.status
-        )
-
-        # Create user and assign project
-        self.user = User.objects.create_user(
-            username="testuser",
-            email="testuser@example.com",
-            password="testpass",
-            status=self.status,
-            project=self.project
-        )
-
-        # Setup authentication
-        self.token = RefreshToken.for_user(self.user).access_token
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
-
         # Valid payload for creating contact with addresses
         self.valid_payload = {
             "first_name": "John",
@@ -99,20 +45,13 @@ class ContactAPITestCase(APITestCase):
         response = self.client.post("/api/contacts/", self.valid_payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Contact.objects.count(), 1)
-        self.assertEqual(Address.objects.count(), 2)
+        self.assertEqual(Address.objects.filter(entity_type='recipient').count(), 2)
         
-        # Verify project association
         contact = Contact.objects.first()
         self.assertIn(self.project, contact.projects.all())
-        
-        # Verify addresses are linked to contact
         self.assertEqual(contact.addresses.count(), 2)
-        self.assertTrue(
-            contact.addresses.filter(address_type="shipping").exists()
-        )
-        self.assertTrue(
-            contact.addresses.filter(address_type="billing").exists()
-        )
+        self.assertTrue(contact.addresses.filter(address_type="shipping").exists())
+        self.assertTrue(contact.addresses.filter(address_type="billing").exists())
 
     def test_create_contact_without_addresses(self):
         """Test creating a contact without addresses"""
@@ -121,21 +60,20 @@ class ContactAPITestCase(APITestCase):
         response = self.client.post("/api/contacts/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Contact.objects.count(), 1)
-        self.assertEqual(Address.objects.count(), 0)
+        self.assertEqual(Address.objects.filter(entity_type='recipient').count(), 0)
 
     def test_create_contact_with_invalid_address(self):
         """Test creating a contact with invalid address data"""
         invalid_payload = self.valid_payload.copy()
-        invalid_payload["addresses"][0].pop("city")  # Remove required field
+        invalid_payload["addresses"][0].pop("city")
         response = self.client.post("/api/contacts/", invalid_payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Contact.objects.count(), 0)
-        self.assertEqual(Address.objects.count(), 0)
+        self.assertEqual(Address.objects.filter(entity_type='recipient').count(), 0)
         self.assertIn('addresses', response.data['detail'])
 
     def test_get_contacts_list(self):
         """Test retrieving contacts list for user's project"""
-        # Create contacts for both projects
         contact1 = Contact.objects.create(
             first_name="John",
             last_name="Doe",
@@ -152,14 +90,12 @@ class ContactAPITestCase(APITestCase):
 
         response = self.client.get("/api/contacts/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # Should only return contacts from user's project
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["first_name"], "John")
 
     def test_get_contacts_unauthenticated(self):
         """Test accessing contacts without authentication"""
-        self.client.credentials()  # Remove authentication
+        self.client.credentials()
         response = self.client.get("/api/contacts/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -172,14 +108,14 @@ class ContactAPITestCase(APITestCase):
             "state": "FL",
             "postal_code": "33103",
             "country": "USA",
-            "address_type": "shipping",  # Cambiado de 'warehouse' a 'shipping'
+            "address_type": "shipping",
             "notes": "Additional shipping address"
         })
 
         response = self.client.post("/api/contacts/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         contact = Contact.objects.first()
-        self.assertEqual(contact.addresses.count(), 3)
+        self.assertEqual(contact.addresses.filter(entity_type='recipient').count(), 3)
 
     def test_create_contact_missing_required_fields(self):
         """Test creating a contact with missing required fields"""
