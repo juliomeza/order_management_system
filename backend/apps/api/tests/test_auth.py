@@ -2,7 +2,7 @@ from rest_framework import status
 from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
-from .test_base import BaseAPITestCase
+from apps.api.tests.test_base import BaseAPITestCase
 
 class AuthenticationTestCase(BaseAPITestCase):
     def setUp(self):

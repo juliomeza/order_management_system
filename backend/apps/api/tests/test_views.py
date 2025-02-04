@@ -1,143 +1,12 @@
-from rest_framework.test import APITestCase
 from rest_framework import status
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
-from apps.orders.models import Order, OrderType, OrderClass, Project
-from apps.core.models import Status
-from apps.customers.models import Customer
-from apps.inventory.models import Material, MaterialType, UOM, Inventory
-from apps.logistics.models import Warehouse, Contact, Address
+from apps.orders.models import Order
+from apps.api.tests.test_base import BaseAPITestCase
 
-User = get_user_model()
-
-class OrderAPITestCase(APITestCase):
+class OrderAPITestCase(BaseAPITestCase):
     def setUp(self):
-        # Create statuses
-        self.status_global = Status.objects.create(
-            name="Active",
-            status_type="Global",
-            is_active=True
-        )
-        self.status_project = Status.objects.create(
-            name="Project Active",
-            status_type="Project",
-            is_active=True
-        )
-        self.status_material = Status.objects.create(
-            name="Material Active",
-            status_type="Inventory",
-            is_active=True
-        )
-
-        # Create customer
-        self.customer = Customer.objects.create(
-            name="Test Customer",
-            lookup_code="CUST001",
-            status=self.status_global
-        )
-
-        # Create project
-        self.project = Project.objects.create(
-            name="Test Project",
-            lookup_code="PRJ001",
-            orders_prefix="TP",
-            customer=self.customer,
-            status=self.status_project
-        )
-
-        # Create user and assign project
-        self.user = User.objects.create_user(
-            username="testuser",
-            email="testuser@example.com",
-            password="testpass"
-        )
-        self.user.project = self.project
-        self.user.save()
-
-        # Setup authentication
-        self.token = RefreshToken.for_user(self.user).access_token
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
-
-        # Create material type and UOM
-        self.material_type = MaterialType.objects.create(
-            name="General",
-            lookup_code="GEN"
-        )
-        self.uom = UOM.objects.create(
-            name="Kilogram",
-            lookup_code="KG"
-        )
-
-        # Create material
-        self.material = Material.objects.create(
-            name="Test Material",
-            lookup_code="MAT123",
-            type=self.material_type,
-            project=self.project,
-            status=self.status_material,
-            uom=self.uom
-        )
-
-        # Create warehouse with address
-        self.warehouse_address = Address.objects.create(
-            address_line_1="789 Warehouse Rd",
-            city="Miami",
-            state="FL",
-            postal_code="33103",
-            country="USA",
-            entity_type="warehouse",
-            address_type="shipping"
-        )
-
-        self.warehouse = Warehouse.objects.create(
-            name="Main Warehouse",
-            lookup_code="WH001",
-            address=self.warehouse_address,
-            status=self.status_global
-        )
-        self.warehouse.projects.add(self.project)
-
-        # Create inventory
-        self.inventory = Inventory.objects.create(
-            project=self.project,
-            material=self.material,
-            warehouse=self.warehouse,
-            quantity=10.0
-        )
-
-        # Create contact
-        self.contact = Contact.objects.create(
-            first_name="John",
-            last_name="Doe",
-            phone="123456789"
-        )
-        self.contact.projects.add(self.project)
-
-        # Create addresses
-        self.shipping_address = Address.objects.create(
-            address_line_1="123 Shipping St",
-            city="Miami",
-            state="FL",
-            postal_code="33101",
-            country="USA",
-            entity_type="customer",
-            address_type="shipping"
-        )
-
-        self.billing_address = Address.objects.create(
-            address_line_1="456 Billing Ave",
-            city="Miami",
-            state="FL",
-            postal_code="33102",
-            country="USA",
-            entity_type="customer",
-            address_type="billing"
-        )
-
-        # Create order type and class
-        self.order_type = OrderType.objects.create(type_name="Standard")
-        self.order_class = OrderClass.objects.create(class_name="Regular")
-
+        """Set up test data"""
+        super().setUp()
+        
         # Valid payload for creating orders
         self.valid_payload = {
             "lookup_code_order": "TEST123",
@@ -193,16 +62,7 @@ class OrderAPITestCase(APITestCase):
 
     def test_create_order_invalid_project(self):
         """Test creating order for invalid project"""
-        # Create another project
-        other_project = Project.objects.create(
-            name="Other Project",
-            lookup_code="PRJ002",
-            orders_prefix="OP",
-            customer=self.customer,
-            status=self.status_project
-        )
-        
-        self.valid_payload["project"] = other_project.id
+        self.valid_payload["project"] = self.other_project.id
         response = self.client.post("/api/orders/", self.valid_payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 

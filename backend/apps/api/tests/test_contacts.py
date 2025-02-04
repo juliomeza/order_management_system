@@ -1,6 +1,6 @@
 from rest_framework import status
 from apps.logistics.models import Contact, Address
-from .test_base import BaseAPITestCase
+from apps.api.tests.test_base import BaseAPITestCase
 
 class ContactAPITestCase(BaseAPITestCase):
     def setUp(self):

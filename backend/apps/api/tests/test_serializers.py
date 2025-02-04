@@ -4,7 +4,7 @@ from uuid import uuid4
 from apps.api.serializers import OrderSerializer 
 from apps.logistics.models import Carrier, CarrierService, Warehouse
 from apps.inventory.models import Inventory
-from .test_base import BaseAPITestCase
+from apps.api.tests.test_base import BaseAPITestCase
 
 class OrderSerializerTest(BaseAPITestCase):
     def setUp(self):
