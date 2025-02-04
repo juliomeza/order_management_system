@@ -1,57 +1,24 @@
-from rest_framework.test import APITestCase
 from rest_framework import status
-from django.contrib.auth import get_user_model
-from apps.core.models import Status
-from apps.customers.models import Project, Customer
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from datetime import datetime, timedelta
 from django.utils import timezone
-from rest_framework_simplejwt.settings import api_settings
-from unittest.mock import patch
+from rest_framework_simplejwt.tokens import AccessToken
+from .test_base import BaseAPITestCase
 
-User = get_user_model()
-
-class AuthenticationTestCase(APITestCase):
+class AuthenticationTestCase(BaseAPITestCase):
     def setUp(self):
-        # Create status
-        self.status = Status.objects.create(
-            name="Active",
-            code="ACTIVE",
-            status_type="Global",
-            is_active=True
-        )
-
-        # Create customer and project
-        self.customer = Customer.objects.create(
-            name="Test Customer",
-            lookup_code="CUST001",
-            status=self.status
-        )
-
-        self.project = Project.objects.create(
-            name="Test Project",
-            lookup_code="PRJ001",
-            orders_prefix="TP",
-            customer=self.customer,
-            status=self.status
-        )
-
-        # Create active user
-        self.user = User.objects.create_user(
-            username="testuser",
-            email="user@example.com", 
-            password="testpass",
-            status=self.status,
-            project=self.project,
-            is_active=True
-        )
-
-        # Create inactive user
-        self.inactive_user = User.objects.create_user(
+        """
+        Override the base setUp to create only what we need for auth tests
+        and create an inactive user for specific auth tests
+        """
+        # Create base objects (user, project, etc)
+        super().setUp()
+        
+        # Create inactive user for testing
+        self.inactive_user = self.user.__class__.objects.create_user(
             username="inactive",
             email="inactive@example.com",
             password="testpass",
-            status=self.status,
+            status=self.status_global,
             is_active=False
         )
 
@@ -63,7 +30,7 @@ class AuthenticationTestCase(APITestCase):
     def test_obtain_token_success(self):
         """Test successful token obtain with valid credentials"""
         response = self.client.post(self.token_url, {
-            "email": "user@example.com",
+            "email": "testuser@example.com",
             "password": "testpass"
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -78,7 +45,7 @@ class AuthenticationTestCase(APITestCase):
     def test_invalid_credentials(self):
         """Test token obtain with invalid credentials"""
         response = self.client.post(self.token_url, {
-            "email": "user@example.com",
+            "email": "testuser@example.com",
             "password": "wrongpass"
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -88,7 +55,7 @@ class AuthenticationTestCase(APITestCase):
         """Test successful token refresh"""
         # First obtain tokens
         response = self.client.post(self.token_url, {
-            "email": "user@example.com",
+            "email": "testuser@example.com",
             "password": "testpass"
         })
         refresh_token = response.data["refresh"]
@@ -111,7 +78,7 @@ class AuthenticationTestCase(APITestCase):
         """Test token obtain with missing credentials"""
         # Test missing password
         response = self.client.post(self.token_url, {
-            "email": "user@example.com"
+            "email": "testuser@example.com"
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -145,7 +112,7 @@ class AuthenticationTestCase(APITestCase):
         """Test successful logout by blacklisting refresh token"""
         # First obtain tokens
         auth_response = self.client.post(self.token_url, {
-            "email": "user@example.com",
+            "email": "testuser@example.com",
             "password": "testpass"
         })
         refresh_token = auth_response.data["refresh"]
@@ -178,14 +145,13 @@ class AuthenticationTestCase(APITestCase):
         """Test using an expired access token"""
         # First obtain tokens with normal lifetime
         response = self.client.post(self.token_url, {
-            "email": "user@example.com",
+            "email": "testuser@example.com",
             "password": "testpass"
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         access_token = response.data["access"]
 
         # Override the token's exp claim to make it expired
-        from rest_framework_simplejwt.tokens import AccessToken
         token = AccessToken(access_token)
         exp_timestamp = timezone.now() - timedelta(days=1)  # Token expired yesterday
         token.payload['exp'] = datetime.timestamp(exp_timestamp)
@@ -201,7 +167,7 @@ class AuthenticationTestCase(APITestCase):
         """Test attempting to refresh token after logout"""
         # First obtain tokens
         auth_response = self.client.post(self.token_url, {
-            "email": "user@example.com",
+            "email": "testuser@example.com",
             "password": "testpass"
         })
         refresh_token = auth_response.data["refresh"]
