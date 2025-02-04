@@ -3,7 +3,11 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 from apps.core.models import Status
 from apps.customers.models import Project, Customer
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from datetime import datetime, timedelta
+from django.utils import timezone
+from rest_framework_simplejwt.settings import api_settings
+from unittest.mock import patch
 
 User = get_user_model()
 
@@ -54,6 +58,7 @@ class AuthenticationTestCase(APITestCase):
         # Base URL for token endpoints
         self.token_url = "/api/token/"
         self.refresh_url = "/api/token/refresh/"
+        self.logout_url = "/api/token/logout/"
 
     def test_obtain_token_success(self):
         """Test successful token obtain with valid credentials"""
@@ -135,3 +140,79 @@ class AuthenticationTestCase(APITestCase):
         """Test refresh token endpoint with missing token"""
         response = self.client.post(self.refresh_url, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_logout_success(self):
+        """Test successful logout by blacklisting refresh token"""
+        # First obtain tokens
+        auth_response = self.client.post(self.token_url, {
+            "email": "user@example.com",
+            "password": "testpass"
+        })
+        refresh_token = auth_response.data["refresh"]
+
+        # Then logout
+        response = self.client.post(self.logout_url, {
+            "refresh": refresh_token
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify token can't be used anymore
+        refresh_response = self.client.post(self.refresh_url, {
+            "refresh": refresh_token
+        })
+        self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_without_token(self):
+        """Test logout attempt without providing refresh token"""
+        response = self.client.post(self.logout_url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_logout_with_invalid_token(self):
+        """Test logout attempt with invalid refresh token"""
+        response = self.client.post(self.logout_url, {
+            "refresh": "invalid_token"
+        })
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_expired_access_token(self):
+        """Test using an expired access token"""
+        # First obtain tokens with normal lifetime
+        response = self.client.post(self.token_url, {
+            "email": "user@example.com",
+            "password": "testpass"
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        access_token = response.data["access"]
+
+        # Override the token's exp claim to make it expired
+        from rest_framework_simplejwt.tokens import AccessToken
+        token = AccessToken(access_token)
+        exp_timestamp = timezone.now() - timedelta(days=1)  # Token expired yesterday
+        token.payload['exp'] = datetime.timestamp(exp_timestamp)
+        expired_token = str(token)
+
+        # Try to use the expired token
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {expired_token}')
+        response = self.client.get("/api/contacts/")  # Use any protected endpoint
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("Given token not valid for any token type", str(response.data["detail"]))
+
+    def test_refresh_token_after_logout(self):
+        """Test attempting to refresh token after logout"""
+        # First obtain tokens
+        auth_response = self.client.post(self.token_url, {
+            "email": "user@example.com",
+            "password": "testpass"
+        })
+        refresh_token = auth_response.data["refresh"]
+
+        # Logout
+        self.client.post(self.logout_url, {
+            "refresh": refresh_token
+        })
+
+        # Try to use the blacklisted refresh token
+        response = self.client.post(self.refresh_url, {
+            "refresh": refresh_token
+        })
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
