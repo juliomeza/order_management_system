@@ -3,24 +3,13 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 from apps.api.tests.test_base import BaseAPITestCase
+from .factories import UserFactory
 
 class AuthenticationTestCase(BaseAPITestCase):
     def setUp(self):
-        """
-        Override the base setUp to create only what we need for auth tests
-        and create an inactive user for specific auth tests
-        """
-        # Create base objects (user, project, etc)
-        super().setUp()
-        
-        # Create inactive user for testing
-        self.inactive_user = self.user.__class__.objects.create_user(
-            username="inactive",
-            email="inactive@example.com",
-            password="testpass",
-            status=self.status_global,
-            is_active=False
-        )
+        """Set up auth test data"""
+        self.user = UserFactory()
+        self.inactive_user = UserFactory(is_active=False)
 
         # Base URL for token endpoints
         self.token_url = "/api/token/"
@@ -30,7 +19,7 @@ class AuthenticationTestCase(BaseAPITestCase):
     def test_obtain_token_success(self):
         """Test successful token obtain with valid credentials"""
         response = self.client.post(self.token_url, {
-            "email": "testuser@example.com",
+            "email": self.user.email,
             "password": "testpass"
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -45,7 +34,7 @@ class AuthenticationTestCase(BaseAPITestCase):
     def test_invalid_credentials(self):
         """Test token obtain with invalid credentials"""
         response = self.client.post(self.token_url, {
-            "email": "testuser@example.com",
+            "email": self.user.email,
             "password": "wrongpass"
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -55,7 +44,7 @@ class AuthenticationTestCase(BaseAPITestCase):
         """Test successful token refresh"""
         # First obtain tokens
         response = self.client.post(self.token_url, {
-            "email": "testuser@example.com",
+            "email": self.user.email,
             "password": "testpass"
         })
         refresh_token = response.data["refresh"]
@@ -78,7 +67,7 @@ class AuthenticationTestCase(BaseAPITestCase):
         """Test token obtain with missing credentials"""
         # Test missing password
         response = self.client.post(self.token_url, {
-            "email": "testuser@example.com"
+            "email": self.user.email,
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -91,7 +80,7 @@ class AuthenticationTestCase(BaseAPITestCase):
     def test_inactive_user(self):
         """Test token obtain with inactive user"""
         response = self.client.post(self.token_url, {
-            "email": "inactive@example.com",
+            "email": self.inactive_user.email,
             "password": "testpass"
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -112,7 +101,7 @@ class AuthenticationTestCase(BaseAPITestCase):
         """Test successful logout by blacklisting refresh token"""
         # First obtain tokens
         auth_response = self.client.post(self.token_url, {
-            "email": "testuser@example.com",
+            "email": self.user.email,
             "password": "testpass"
         })
         refresh_token = auth_response.data["refresh"]
@@ -145,7 +134,7 @@ class AuthenticationTestCase(BaseAPITestCase):
         """Test using an expired access token"""
         # First obtain tokens with normal lifetime
         response = self.client.post(self.token_url, {
-            "email": "testuser@example.com",
+            "email": self.user.email,
             "password": "testpass"
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -167,7 +156,7 @@ class AuthenticationTestCase(BaseAPITestCase):
         """Test attempting to refresh token after logout"""
         # First obtain tokens
         auth_response = self.client.post(self.token_url, {
-            "email": "testuser@example.com",
+            "email": self.user.email,
             "password": "testpass"
         })
         refresh_token = auth_response.data["refresh"]
