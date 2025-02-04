@@ -1,40 +1,66 @@
+from uuid import uuid4
 from rest_framework.test import APIRequestFactory
 from rest_framework.request import Request
-from uuid import uuid4
-from apps.api.serializers import OrderSerializer 
-from apps.logistics.models import Carrier, CarrierService, Warehouse
-from apps.inventory.models import Inventory
-from apps.api.tests.test_base import BaseAPITestCase
+from apps.api.serializers import OrderSerializer
+from rest_framework.test import APITestCase
+from apps.api.tests.factories import (
+    StatusFactory, ProjectFactory, UserFactory, MaterialFactory, 
+    WarehouseFactory, ContactFactory, AddressFactory, OrderTypeFactory,
+    OrderClassFactory, CarrierFactory, CarrierServiceFactory, InventoryFactory
+)
 
-class OrderSerializerTest(BaseAPITestCase):
+class OrderSerializerTest(APITestCase):
     def setUp(self):
         """Set up test data"""
-        super().setUp()
-        
         # Create factory for request context
         self.factory = APIRequestFactory()
         wsgi_request = self.factory.get("/")
         self.request = Request(wsgi_request)
+
+        # Create base objects
+        self.status = StatusFactory()
+        self.project = ProjectFactory()
+        self.user = UserFactory(project=self.project)
         self.request.user = self.user
 
-        # Create carrier and carrier_service
-        self.carrier = Carrier.objects.create(
-            name="Test Carrier",
-            lookup_code="CARR001"
+        # Create order-related objects
+        self.order_type = OrderTypeFactory()
+        self.order_class = OrderClassFactory()
+        self.warehouse = WarehouseFactory()
+        self.warehouse.projects.add(self.project)
+        
+        self.contact = ContactFactory()
+        self.contact.projects.add(self.project)
+        
+        self.shipping_address = AddressFactory(
+            entity_type='recipient',
+            address_type='shipping'
         )
-        self.carrier.projects.add(self.project)
+        self.billing_address = AddressFactory(
+            entity_type='recipient',
+            address_type='billing'
+        )
 
-        self.carrier_service = CarrierService.objects.create(
-            name="Express",
-            lookup_code="EXP",
-            carrier=self.carrier
+        # Create material and inventory
+        self.material = MaterialFactory(project=self.project)
+        self.inventory = InventoryFactory(
+            project=self.project,
+            material=self.material,
+            warehouse=self.warehouse,
+            quantity=10.0
         )
+
+        # Create carrier and service
+        self.carrier = CarrierFactory()
+        self.carrier.projects.add(self.project)
+        
+        self.carrier_service = CarrierServiceFactory(carrier=self.carrier)
         self.project.services.add(self.carrier_service)
 
         self.valid_data = {
             "lookup_code_order": "TEST0001",
             "lookup_code_shipment": "SHIP0001",
-            "status": self.status_project.id,
+            "status": self.status.id,
             "order_type": self.order_type.id,
             "order_class": self.order_class.id,
             "project": self.project.id,
@@ -71,7 +97,8 @@ class OrderSerializerTest(BaseAPITestCase):
 
     def test_invalid_project_restriction(self):
         """Test creating an order with invalid project"""
-        self.valid_data["project"] = self.other_project.id
+        other_project = ProjectFactory()
+        self.valid_data["project"] = other_project.id
         serializer = OrderSerializer(data=self.valid_data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
         self.assertIn("project", serializer.errors)
@@ -85,12 +112,7 @@ class OrderSerializerTest(BaseAPITestCase):
 
     def test_invalid_warehouse(self):
         """Test creating an order with warehouse not assigned to project"""
-        new_warehouse = Warehouse.objects.create(
-            name="Other Warehouse",
-            lookup_code="WH002",
-            address=self.warehouse_address,
-            status=self.status_global
-        )
+        new_warehouse = WarehouseFactory()  # Not assigned to project
         self.valid_data["warehouse"] = new_warehouse.id
         serializer = OrderSerializer(data=self.valid_data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
@@ -98,11 +120,7 @@ class OrderSerializerTest(BaseAPITestCase):
 
     def test_invalid_contact(self):
         """Test creating an order with contact not assigned to project"""
-        other_contact = self.contact.__class__.objects.create(
-            first_name="Other",
-            last_name="Contact",
-            phone="987654321"
-        )
+        other_contact = ContactFactory()  # Not assigned to project
         self.valid_data["contact"] = other_contact.id
         serializer = OrderSerializer(data=self.valid_data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
@@ -117,15 +135,9 @@ class OrderSerializerTest(BaseAPITestCase):
 
     def test_invalid_service_type(self):
         """Test creating an order with service type not belonging to carrier"""
-        other_carrier = Carrier.objects.create(
-            name="Other Carrier",
-            lookup_code="CARR002"
-        )
-        other_service = CarrierService.objects.create(
-            name="Other Service",
-            lookup_code="OTH",
-            carrier=other_carrier
-        )
+        other_carrier = CarrierFactory()
+        other_service = CarrierServiceFactory(carrier=other_carrier)
+        
         self.valid_data["carrier"] = self.carrier.id
         self.valid_data["service_type"] = other_service.id
         serializer = OrderSerializer(data=self.valid_data, context={"request": self.request})
@@ -141,22 +153,12 @@ class OrderSerializerTest(BaseAPITestCase):
 
     def test_multiple_lines(self):
         """Test creating an order with multiple valid lines"""
-        second_material = self.material.__class__.objects.create(
-            name="Second Material",
-            lookup_code="MAT456",
-            type=self.material_type,
-            project=self.project,
-            status=self.status_material,
-            uom=self.uom
-        )
-        
-        # Create second inventory
-        Inventory.objects.create(
+        second_material = MaterialFactory(project=self.project)
+        InventoryFactory(
             project=self.project,
             material=second_material,
             warehouse=self.warehouse,
-            quantity=5.0,
-            license_plate_id=f"LP{uuid4().hex[:8].upper()}"
+            quantity=5.0
         )
 
         self.valid_data["lines"].append({

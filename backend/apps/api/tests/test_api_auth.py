@@ -2,10 +2,10 @@ from rest_framework import status
 from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
-from apps.api.tests.test_base import BaseAPITestCase
-from .factories import UserFactory
+from rest_framework.test import APITestCase
+from apps.api.tests.factories import UserFactory
 
-class AuthenticationTestCase(BaseAPITestCase):
+class OrderSerializerTest(APITestCase):
     def setUp(self):
         """Set up auth test data"""
         self.user = UserFactory()

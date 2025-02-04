@@ -1,14 +1,28 @@
+from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 from apps.logistics.models import Contact, Address
-from apps.api.tests.test_base import BaseAPITestCase
+from apps.api.tests.factories import (
+    ContactFactory, UserFactory, 
+    ProjectFactory, StatusFactory
+)
 
-class ContactAPITestCase(BaseAPITestCase):
+class ContactAPITestCase(APITestCase):
     def setUp(self):
-        super().setUp()
+        """Set up test data"""
+        # Clear existing data
         Contact.objects.all().delete()
         Address.objects.filter(entity_type='recipient').delete()
         
-        # Valid payload for creating contact with addresses
+        # Create base objects
+        self.status = StatusFactory()
+        self.project = ProjectFactory()
+        self.user = UserFactory(project=self.project)
+        
+        # Setup authentication
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        
         self.valid_payload = {
             "first_name": "John",
             "last_name": "Doe",
@@ -74,28 +88,21 @@ class ContactAPITestCase(BaseAPITestCase):
 
     def test_get_contacts_list(self):
         """Test retrieving contacts list for user's project"""
-        contact1 = Contact.objects.create(
-            first_name="John",
-            last_name="Doe",
-            phone="1234567890"
-        )
-        contact1.projects.add(self.project)
-
-        contact2 = Contact.objects.create(
-            first_name="Jane",
-            last_name="Smith",
-            phone="0987654321"
-        )
-        contact2.projects.add(self.other_project)
+        # Create contact for user's project
+        contact1 = ContactFactory.create(projects=[self.project])
+        
+        # Create contact for other project
+        other_project = ProjectFactory()
+        contact2 = ContactFactory.create(projects=[other_project])
 
         response = self.client.get("/api/contacts/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["first_name"], "John")
+        self.assertEqual(response.data[0]["first_name"], contact1.first_name)
 
     def test_get_contacts_unauthenticated(self):
         """Test accessing contacts without authentication"""
-        self.client.credentials()
+        self.client.credentials()  # Remove authentication
         response = self.client.get("/api/contacts/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 

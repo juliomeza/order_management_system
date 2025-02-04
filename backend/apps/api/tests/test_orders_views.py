@@ -1,18 +1,58 @@
+from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 from apps.orders.models import Order
-from apps.api.tests.test_base import BaseAPITestCase
+from apps.api.tests.factories import (
+    OrderFactory, MaterialFactory, InventoryFactory, UserFactory,
+    ProjectFactory, StatusFactory, OrderTypeFactory, OrderClassFactory,
+    WarehouseFactory, ContactFactory, AddressFactory
+)
 
-class OrderAPITestCase(BaseAPITestCase):
+class OrderAPITestCase(APITestCase):
     def setUp(self):
         """Set up test data"""
-        super().setUp()
+        # Create base objects
+        self.status = StatusFactory()
+        self.project = ProjectFactory()
+        self.user = UserFactory(project=self.project)
+        
+        # Setup authentication
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        
+        # Create order-related objects
+        self.order_type = OrderTypeFactory()
+        self.order_class = OrderClassFactory()
+        self.warehouse = WarehouseFactory()
+        self.warehouse.projects.add(self.project)
+        
+        self.contact = ContactFactory()
+        self.contact.projects.add(self.project)
+        
+        self.shipping_address = AddressFactory(
+            entity_type='recipient',
+            address_type='shipping'
+        )
+        self.billing_address = AddressFactory(
+            entity_type='recipient',
+            address_type='billing'
+        )
+        
+        # Create inventory for testing
+        self.material = MaterialFactory(project=self.project)
+        self.inventory = InventoryFactory(
+            project=self.project,
+            material=self.material,
+            warehouse=self.warehouse,
+            quantity=10.0
+        )
         
         # Valid payload for creating orders
         self.valid_payload = {
             "lookup_code_order": "TEST123",
             "lookup_code_shipment": "SHIP123",
             "project": self.project.id,
-            "status": self.status_project.id,
+            "status": self.status.id,
             "order_type": self.order_type.id,
             "order_class": self.order_class.id,
             "warehouse": self.warehouse.id,
@@ -38,8 +78,16 @@ class OrderAPITestCase(BaseAPITestCase):
 
     def test_get_orders_success(self):
         """Test retrieving orders for authenticated user"""
+        # Create an order for the current user's project
+        OrderFactory(project=self.project)
+        
+        # Create an order for another project (shouldn't be visible)
+        other_project = ProjectFactory()
+        OrderFactory(project=other_project)
+        
         response = self.client.get("/api/orders/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)  # Should only see order from user's project
 
     def test_get_orders_unauthorized(self):
         """Test retrieving orders without authentication"""
@@ -62,7 +110,8 @@ class OrderAPITestCase(BaseAPITestCase):
 
     def test_create_order_invalid_project(self):
         """Test creating order for invalid project"""
-        self.valid_payload["project"] = self.other_project.id
+        other_project = ProjectFactory()
+        self.valid_payload["project"] = other_project.id
         response = self.client.post("/api/orders/", self.valid_payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
