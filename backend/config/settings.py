@@ -34,9 +34,12 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.logistics',
     'apps.api',
+
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,7 +50,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     'apps.core.middleware.ErrorLoggingMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -207,3 +213,6 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,  # Evita reutilización de refresh tokens antiguos
     "AUTH_HEADER_TYPES": ("Bearer",),  # Se usará `Bearer <token>` en los headers
 }
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True
