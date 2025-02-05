@@ -140,3 +140,12 @@ class ContactSerializer(serializers.ModelSerializer):
             contact.addresses.add(address)  # ✅ Link address to contact
 
         return contact
+
+# Inventory Serializer
+class InventorySerializer(serializers.ModelSerializer):
+    """
+    Serializer para gestionar el inventario.
+    """
+    class Meta:
+        model = Inventory
+        fields = '__all__'

@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,  # Para refrescar el token de acceso
     TokenBlacklistView,  # Para hacer logout
 )
-from .views import get_or_create_orders, get_or_create_contacts
+from .views import get_or_create_orders, get_or_create_contacts, InventoryListView, ContactListView
 
 urlpatterns = [
     # Orders
@@ -17,4 +17,8 @@ urlpatterns = [
 
     # Contacts
     path('contacts/', get_or_create_contacts, name='get-or-create-contacts'),
+    path("contacts/list/", ContactListView.as_view(), name="contact-list"),
+
+    # Inventory
+    path("inventory/list/", InventoryListView.as_view(), name="inventory-list"),
 ]
