@@ -1,7 +1,7 @@
 from rest_framework.pagination import CursorPagination
 
 class InventoryPagination(CursorPagination):
-    page_size = 20
+    page_size = 10
     ordering = 'id'
 
 class ContactsPagination(CursorPagination):
