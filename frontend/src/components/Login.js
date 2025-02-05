@@ -10,7 +10,7 @@ function Login() {
     e.preventDefault();
     try {
       await login(email, password);
-      window.location.href = "/orders"; // Redirigir a la página de órdenes
+      window.location.replace("/orders"); // Redirigir correctamente
     } catch (err) {
       setError("Credenciales incorrectas");
     }
