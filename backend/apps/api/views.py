@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from drf_yasg.utils import swagger_auto_schema
 
 # Models
 from apps.orders.models import Order
@@ -22,7 +23,10 @@ from apps.core.filters import InventoryFilter, ContactFilter
 # Configure logger
 logger = logging.getLogger('custom_logger')
 
-
+@swagger_auto_schema(
+    method='post',
+    request_body=OrderSerializer
+)
 ### ✅ 1. API para Ordenes
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -51,7 +55,10 @@ def get_or_create_orders(request):
         
         raise BusinessLogicError(detail=serializer.errors)
 
-
+@swagger_auto_schema(
+    method='post',
+    request_body=ContactSerializer
+)
 ### ✅ 2. API para Contactos
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
