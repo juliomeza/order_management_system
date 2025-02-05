@@ -71,6 +71,8 @@ class Contact(TimeStampedModel):
         indexes = [
             models.Index(fields=['email']),
             models.Index(fields=['phone']),
+            models.Index(fields=['first_name']),
+            models.Index(fields=['last_name']),
         ]
 
     def __str__(self):
