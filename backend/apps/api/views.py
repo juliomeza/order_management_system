@@ -146,22 +146,27 @@ def get_carriers(request):
 @permission_classes([IsAuthenticated])
 def get_carrier_services(request):
     """
-    GET: Retrieves available carrier services based on the user's assigned carriers.
-    If a carrier_id is provided, only returns services associated with that carrier.
+    GET: Retrieves available carrier services based on the user's assigned carriers and project services.
+    If a carrier_id is provided, only returns services associated with that carrier and the user's project.
     """
     user = request.user
     carrier_id = request.GET.get('carrier_id')
 
     if carrier_id:
-        # Filtrar solo los CarrierService asociados al carrier_id y dentro del alcance del usuario
+        # Asegurar que el carrier_id es válido para el usuario
+        if not user.project.carriers.filter(id=carrier_id).exists():
+            return Response({"error": "This carrier is not assigned to your project."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Filtrar solo los CarrierService que pertenecen a ese carrier y que están en el project del usuario
         carrier_services = CarrierService.objects.filter(
-            carrier_id=carrier_id,
-            carrier__in=user.project.carriers.all()
+            carrier_id=carrier_id,  # 🔹 Ahora nos aseguramos de que el servicio pertenece a ese carrier
+            id__in=user.project.services.all()
         )
     else:
-        # Devolver todos los CarrierService disponibles para los carriers del usuario
-        carrier_services = CarrierService.objects.filter(carrier__in=user.project.carriers.all())
+        # Si no hay carrier_id, devolver solo los servicios permitidos para el usuario
+        carrier_services = CarrierService.objects.filter(
+            id__in=user.project.services.all()
+        )
 
     serializer = CarrierServiceSerializer(carrier_services, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
