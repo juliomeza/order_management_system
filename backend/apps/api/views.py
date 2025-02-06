@@ -9,11 +9,11 @@ from drf_yasg.utils import swagger_auto_schema
 
 # Models
 from apps.orders.models import Order
-from apps.logistics.models import Contact
+from apps.logistics.models import Contact, CarrierService
 from apps.inventory.models import Inventory
 
 # Serializers
-from .serializers import OrderSerializer, ContactSerializer, InventorySerializer
+from .serializers import OrderSerializer, ContactSerializer, InventorySerializer, ProjectSerializer, WarehouseSerializer, CarrierSerializer, CarrierServiceSerializer
 
 # Core Utilities
 from apps.core.exceptions import BusinessLogicError
@@ -103,3 +103,65 @@ class ContactListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ContactFilter
     search_fields = ["first_name", "last_name", "email"]  # Búsqueda en nombre y correo
+
+### ✅ 5. API para Project
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_projects(request):
+    """
+    GET: Retrieves projects associated with the authenticated user.
+    """
+    user = request.user
+    projects = user.project.customer.projects.all()
+    serializer = ProjectSerializer(projects, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+### ✅ 6. API para Warehouse
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_warehouses(request):
+    """
+    GET: Retrieves warehouses associated with the authenticated user's project.
+    """
+    user = request.user
+    warehouses = user.project.warehouses.all()
+    serializer = WarehouseSerializer(warehouses, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+### ✅ 6. API para Carrier
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_carriers(request):
+    """
+    GET: Retrieves carriers available to the authenticated user's project.
+    """
+    user = request.user
+    carriers = user.project.carriers.all()
+    serializer = CarrierSerializer(carriers, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+### ✅ 6. API para Carrier Service
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_carrier_services(request):
+    """
+    GET: Retrieves available carrier services based on the user's assigned carriers.
+    If a carrier_id is provided, only returns services associated with that carrier.
+    """
+    user = request.user
+    carrier_id = request.GET.get('carrier_id')
+
+    if carrier_id:
+        # Filtrar solo los CarrierService asociados al carrier_id y dentro del alcance del usuario
+        carrier_services = CarrierService.objects.filter(
+            carrier_id=carrier_id,
+            carrier__in=user.project.carriers.all()
+        )
+    else:
+        # Devolver todos los CarrierService disponibles para los carriers del usuario
+        carrier_services = CarrierService.objects.filter(carrier__in=user.project.carriers.all())
+
+    serializer = CarrierServiceSerializer(carrier_services, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+

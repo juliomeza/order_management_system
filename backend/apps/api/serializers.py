@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.orders.models import Order, OrderLine
-from apps.logistics.models import Contact, Address
+from apps.customers.models import Project
+from apps.logistics.models import Warehouse, Contact, Address, Carrier, CarrierService
 from apps.inventory.models import Inventory
 import logging
 from django.db import transaction
@@ -149,3 +150,27 @@ class InventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
         fields = '__all__'
+
+# Project Serializer
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'name']
+
+# Warehouse Serializer
+class WarehouseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Warehouse
+        fields = ['id', 'name']
+
+# Carrier Serializer
+class CarrierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Carrier
+        fields = ['id', 'name']
+
+# Carrier Service Serializer
+class CarrierServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarrierService
+        fields = ['id', 'name', 'carrier']
