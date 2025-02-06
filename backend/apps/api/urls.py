@@ -7,7 +7,17 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,  
     TokenBlacklistView,  
 )
-from .views import get_or_create_orders, get_or_create_contacts, InventoryListView, ContactListView, get_projects, get_warehouses, get_carriers, get_carrier_services, UserDetailView
+from .views import (
+    get_or_create_orders,
+    get_or_create_contacts,
+    InventoryListView,
+    ContactListView,
+    get_projects,
+    get_warehouses,
+    get_carriers,
+    get_carrier_services,
+    UserDetailView,
+)
 
 # Configuración de Swagger
 schema_view = get_schema_view(

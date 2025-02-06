@@ -148,9 +148,12 @@ class InventorySerializer(serializers.ModelSerializer):
     """
     Serializer para gestionar el inventario.
     """
+    material_name = serializers.CharField(source="material.name", read_only=True)
     class Meta:
         model = Inventory
-        fields = '__all__'
+        fields = ['id', 'created_date', 'modified_date', 'location', 'license_plate_id',
+                  'license_plate', 'lot', 'vendor_lot', 'quantity', 'created_by_user',
+                  'modified_by_user', 'project', 'warehouse', 'material', 'material_name']
 
 # Project Serializer
 class ProjectSerializer(serializers.ModelSerializer):

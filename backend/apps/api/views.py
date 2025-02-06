@@ -1,5 +1,6 @@
 import logging
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -12,10 +13,19 @@ from drf_yasg.utils import swagger_auto_schema
 # Models
 from apps.orders.models import Order
 from apps.logistics.models import Contact, CarrierService
-from apps.inventory.models import Inventory
+from apps.inventory.models import Inventory, Material
 
 # Serializers
-from .serializers import OrderSerializer, ContactSerializer, InventorySerializer, ProjectSerializer, WarehouseSerializer, CarrierSerializer, CarrierServiceSerializer, UserSerializer
+from .serializers import (
+    OrderSerializer,
+    ContactSerializer,
+    InventorySerializer,
+    ProjectSerializer,
+    WarehouseSerializer,
+    CarrierSerializer,
+    CarrierServiceSerializer,
+    UserSerializer,
+)
 
 # Core Utilities
 from apps.core.exceptions import BusinessLogicError
@@ -173,7 +183,7 @@ def get_carrier_services(request):
     serializer = CarrierServiceSerializer(carrier_services, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# User
+### ✅ 7. API para User
 User = get_user_model()
 
 class UserDetailView(APIView):

@@ -9,6 +9,7 @@ function OrderForm() {
     const [carrierServices, setCarrierServices] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [materials, setMaterials] = useState([]);
 
     const [formData, setFormData] = useState({
         lookup_code_order: "",
@@ -57,6 +58,29 @@ function OrderForm() {
         };
 
         fetchData();
+    }, []);
+
+    useEffect(() => {
+        const fetchMaterials = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    console.error("No access token found, redirecting to login.");
+                    window.location.href = "/";
+                    return;
+                }
+    
+                const response = await API.get("/inventory/list/", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+    
+                setMaterials(response.data.results || response.data); // Maneja paginación si `results` es usado
+            } catch (error) {
+                console.error("Error fetching materials:", error);
+            }
+        };
+    
+        fetchMaterials();
     }, []);
 
     const handleChange = (e) => {
@@ -140,7 +164,14 @@ function OrderForm() {
                 <h4>Order Lines</h4>
                 {formData.lines.map((line, index) => (
                     <div key={index}>
-                        <input type="text" name="material" placeholder="Material" value={line.material} onChange={(e) => handleLineChange(index, e)} required />
+                        {/* Dropdown para Material */}
+                        <select name="material" value={line.material} onChange={(e) => handleLineChange(index, e)} required>
+                            <option value="">Select Material</option>
+                            {materials.map(material => (
+                                <option key={material.id} value={material.id}>{material.material_name}</option>
+                            ))}
+                        </select>
+
                         <input type="number" name="quantity" placeholder="Quantity" value={line.quantity} onChange={(e) => handleLineChange(index, e)} required />
                         <button type="button" onClick={() => removeLine(index)}>Delete</button>
                     </div>
