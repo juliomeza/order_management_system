@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createOrder } from "../services/orders";
 import { useNavigate } from "react-router-dom";
+import API from "../api"; // Importamos la instancia de API para hacer solicitudes
 
 function OrderForm() {
     const navigate = useNavigate();
+    const [carriers, setCarriers] = useState([]);
+    const [carrierServices, setCarrierServices] = useState([]);
+    const [warehouses, setWarehouses] = useState([]);
+    const [projects, setProjects] = useState([]);
+    
     const [formData, setFormData] = useState({
         lookup_code_order: "",
         lookup_code_shipment: "",
@@ -21,6 +27,28 @@ function OrderForm() {
         notes: "",
         lines: [{ material: "", quantity: "" }]
     });
+
+    // Obtener la lista de carriers, carrier services, warehouses y projects
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [carriersRes, servicesRes, warehousesRes, projectsRes] = await Promise.all([
+                    API.get("/carriers/"),
+                    API.get("/carrier-services/"),
+                    API.get("/warehouses/"),
+                    API.get("/projects/")
+                ]);
+                setCarriers(carriersRes.data);
+                setCarrierServices(servicesRes.data);
+                setWarehouses(warehousesRes.data);
+                setProjects(projectsRes.data);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,13 +88,43 @@ function OrderForm() {
                 <input type="number" name="status" placeholder="Status" value={formData.status} onChange={handleChange} required />
                 <input type="number" name="order_type" placeholder="Order Type" value={formData.order_type} onChange={handleChange} required />
                 <input type="number" name="order_class" placeholder="Order Class" value={formData.order_class} onChange={handleChange} required />
-                <input type="number" name="project" placeholder="Project" value={formData.project} onChange={handleChange} required />
-                <input type="number" name="warehouse" placeholder="Warehouse" value={formData.warehouse} onChange={handleChange} required />
+
+                {/* Dropdown para Project */}
+                <select name="project" value={formData.project} onChange={handleChange} required>
+                    <option value="">Select Project</option>
+                    {projects.map(project => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
+                </select>
+
+                {/* Dropdown para Warehouse */}
+                <select name="warehouse" value={formData.warehouse} onChange={handleChange} required>
+                    <option value="">Select Warehouse</option>
+                    {warehouses.map(warehouse => (
+                        <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
+                    ))}
+                </select>
+
                 <input type="number" name="contact" placeholder="Contact" value={formData.contact} onChange={handleChange} required />
                 <input type="number" name="shipping_address" placeholder="Shipping Address" value={formData.shipping_address} onChange={handleChange} required />
                 <input type="number" name="billing_address" placeholder="Billing Address" value={formData.billing_address} onChange={handleChange} required />
-                <input type="number" name="carrier" placeholder="Carrier" value={formData.carrier} onChange={handleChange} />
-                <input type="number" name="service_type" placeholder="Service" value={formData.service_type} onChange={handleChange} />
+
+                {/* Dropdown para Carrier */}
+                <select name="carrier" value={formData.carrier} onChange={handleChange}>
+                    <option value="">Select Carrier</option>
+                    {carriers.map(carrier => (
+                        <option key={carrier.id} value={carrier.id}>{carrier.name}</option>
+                    ))}
+                </select>
+
+                {/* Dropdown para Carrier Service */}
+                <select name="service_type" value={formData.service_type} onChange={handleChange}>
+                    <option value="">Select Carrier Service</option>
+                    {carrierServices.map(service => (
+                        <option key={service.id} value={service.id}>{service.name}</option>
+                    ))}
+                </select>
+
                 <input type="date" name="expected_delivery_date" placeholder="Expected Delivery Date" value={formData.expected_delivery_date} onChange={handleChange} />
                 <textarea name="notes" placeholder="Notes" value={formData.notes} onChange={handleChange}></textarea>
 
