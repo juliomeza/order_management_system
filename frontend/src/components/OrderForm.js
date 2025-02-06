@@ -11,6 +11,8 @@ function OrderForm() {
     const [projects, setProjects] = useState([]);
     const [materials, setMaterials] = useState([]);
     const [contacts, setContacts] = useState([]);
+    const [shippingAddresses, setShippingAddresses] = useState([]);
+    const [billingAddresses, setBillingAddresses] = useState([]);
 
     const [formData, setFormData] = useState({
         lookup_code_order: "",
@@ -30,7 +32,7 @@ function OrderForm() {
         lines: [{ material: "", quantity: "" }]
     });
 
-    {/* Fetch Project Warehouse Carrier and CarrierService from API */}
+    /* Fetch Project Warehouse Carrier and CarrierService from API */
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("token");
@@ -62,7 +64,7 @@ function OrderForm() {
         fetchData();
     }, []);
 
-    {/* Fetch Inventory from API */}
+    /* Fetch Inventory from API */
     useEffect(() => {
         const fetchMaterials = async () => {
             try {
@@ -86,7 +88,7 @@ function OrderForm() {
         fetchMaterials();
     }, []);
 
-    {/* Fetch Contacts from API */}
+    /* Fetch Contacts from API */
     useEffect(() => {
         const fetchContacts = async () => {
             try {
@@ -111,8 +113,41 @@ function OrderForm() {
     }, []);    
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    
+        // Si el usuario cambia el contacto, actualizamos las direcciones
+        if (name === "contact") {
+            // Buscar el contacto seleccionado en la lista
+            const selectedContact = contacts.find(contact => contact.id.toString() === value);
+            
+            if (selectedContact) {
+                // Filtrar las direcciones según su tipo
+                const shipping = selectedContact.addresses.filter(addr => addr.address_type === "shipping");
+                const billing = selectedContact.addresses.filter(addr => addr.address_type === "billing");
+    
+                setShippingAddresses(shipping);
+                setBillingAddresses(billing);
+    
+                // Autoseleccionar la primera dirección disponible de cada tipo
+                setFormData((prevData) => ({
+                    ...prevData,
+                    shipping_address: shipping.length > 0 ? shipping[0].id : "",
+                    billing_address: billing.length > 0 ? billing[0].id : ""
+                }));
+            } else {
+                // Si el contacto no tiene direcciones, limpiar los dropdowns
+                setShippingAddresses([]);
+                setBillingAddresses([]);
+                setFormData((prevData) => ({
+                    ...prevData,
+                    shipping_address: "",
+                    billing_address: ""
+                }));
+            }
+        }
     };
+    
 
     const handleLineChange = (index, e) => {
         const { name, value } = e.target;
@@ -178,8 +213,25 @@ function OrderForm() {
                     ))}
                 </select>
 
-                <input type="number" name="shipping_address" placeholder="Shipping Address" value={formData.shipping_address} onChange={handleChange} required />
-                <input type="number" name="billing_address" placeholder="Billing Address" value={formData.billing_address} onChange={handleChange} required />
+                {/* Dropdown para Shipping Address */}
+                <select name="shipping_address" value={formData.shipping_address} onChange={handleChange} required>
+                    <option value="">Select Shipping Address</option>
+                    {shippingAddresses.map(address => (
+                        <option key={address.id} value={address.id}>
+                            {address.address_line_1}, {address.city}, {address.state}, {address.country}
+                        </option>
+                    ))}
+                </select>
+
+                {/* Dropdown para Billing Address */}
+                <select name="billing_address" value={formData.billing_address} onChange={handleChange} required>
+                    <option value="">Select Billing Address</option>
+                    {billingAddresses.map(address => (
+                        <option key={address.id} value={address.id}>
+                            {address.address_line_1}, {address.city}, {address.state}, {address.country}
+                        </option>
+                    ))}
+                </select>
 
                 {/* Dropdown para Carrier */}
                 <select name="carrier" value={formData.carrier} onChange={handleChange}>
