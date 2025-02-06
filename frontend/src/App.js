@@ -23,7 +23,7 @@ function App() {
             <div>
                 {user && (
                     <div>
-                        <p>Welcome, {user.username}</p>
+                        <p>Welcome, {user.first_name}</p>
                         <button onClick={handleLogout}>
                             Logout
                         </button>

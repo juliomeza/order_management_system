@@ -1,22 +1,30 @@
 import API from "../api";
-import { jwtDecode } from "jwt-decode";
 
 export const login = async (email, password) => {
     const response = await API.post("/token/", { email, password });
 
-    // Store both access and refresh tokens
+    // Guardar tokens en localStorage
     const accessToken = response.data.access;
     const refreshToken = response.data.refresh;
 
-    localStorage.setItem("token", accessToken);        // Store access token
-    localStorage.setItem("refresh_token", refreshToken); // Store refresh token
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("refresh_token", refreshToken);
 
-    // Decodificar el access token para obtener el usuario autenticado
-    const user = jwtDecode(accessToken);
-    localStorage.setItem("user", JSON.stringify(user));
+    try {
+        // Obtener los datos del usuario autenticado
+        const userResponse = await API.get(`/users/me/`);
+        const user = userResponse.data;
+        
+        // Guardar solo el first_name en localStorage
+        localStorage.setItem("user", JSON.stringify({ first_name: user.first_name }));
 
-    return response.data;
+        return { user, accessToken };
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        throw error;
+    }
 };
+
 
 export const logout = () => {
     localStorage.removeItem("token");

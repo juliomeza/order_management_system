@@ -11,13 +11,14 @@ function Login({ setUser }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userData = await login(email, password);
-      setUser(userData.user);
-      navigate("/orders", { replace: true });
+        const { user } = await login(email, password);
+        setUser(user);  // Ahora setUser recibe el usuario con first_name
+        navigate("/orders", { replace: true });
     } catch (err) {
-      setError("Credenciales incorrectas");
+        setError("Credenciales incorrectas");
     }
   };
+
 
   return (
     <div>

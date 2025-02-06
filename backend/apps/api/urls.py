@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,  
     TokenBlacklistView,  
 )
-from .views import get_or_create_orders, get_or_create_contacts, InventoryListView, ContactListView, get_projects, get_warehouses, get_carriers, get_carrier_services
+from .views import get_or_create_orders, get_or_create_contacts, InventoryListView, ContactListView, get_projects, get_warehouses, get_carriers, get_carrier_services, UserDetailView
 
 # Configuración de Swagger
 schema_view = get_schema_view(
@@ -44,6 +44,9 @@ urlpatterns = [
     path('projects/', get_projects, name='get-projects'),
     path('carriers/', get_carriers, name='get-carriers'),
     path('carrier-services/', get_carrier_services, name='get-carrier-services'),
+
+    # User
+    path("users/me/", UserDetailView.as_view(), name="user-detail"),
 
     # Swagger Endpoints
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

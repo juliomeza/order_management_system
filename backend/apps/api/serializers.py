@@ -5,6 +5,7 @@ from apps.logistics.models import Warehouse, Contact, Address, Carrier, CarrierS
 from apps.inventory.models import Inventory
 import logging
 from django.db import transaction
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger('custom_logger')
 
@@ -174,3 +175,11 @@ class CarrierServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarrierService
         fields = ['id', 'name', 'carrier']
+
+# User Serializer
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name", "email"]

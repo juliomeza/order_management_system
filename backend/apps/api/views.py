@@ -1,9 +1,11 @@
 import logging
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, status
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
 from drf_yasg.utils import swagger_auto_schema
 
@@ -13,7 +15,7 @@ from apps.logistics.models import Contact, CarrierService
 from apps.inventory.models import Inventory
 
 # Serializers
-from .serializers import OrderSerializer, ContactSerializer, InventorySerializer, ProjectSerializer, WarehouseSerializer, CarrierSerializer, CarrierServiceSerializer
+from .serializers import OrderSerializer, ContactSerializer, InventorySerializer, ProjectSerializer, WarehouseSerializer, CarrierSerializer, CarrierServiceSerializer, UserSerializer
 
 # Core Utilities
 from apps.core.exceptions import BusinessLogicError
@@ -170,3 +172,14 @@ def get_carrier_services(request):
 
     serializer = CarrierServiceSerializer(carrier_services, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+# User
+User = get_user_model()
+
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Devuelve los datos del usuario autenticado"""
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
