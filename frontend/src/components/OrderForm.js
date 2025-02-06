@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createOrder } from "../services/orders";
 import { useNavigate } from "react-router-dom";
-import API from "../api"; // Importamos la instancia de API para hacer solicitudes
+import API from "../api";
 
 function OrderForm() {
     const navigate = useNavigate();
@@ -9,7 +9,7 @@ function OrderForm() {
     const [carrierServices, setCarrierServices] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [projects, setProjects] = useState([]);
-    
+
     const [formData, setFormData] = useState({
         lookup_code_order: "",
         lookup_code_shipment: "",
@@ -28,16 +28,25 @@ function OrderForm() {
         lines: [{ material: "", quantity: "" }]
     });
 
-    // Obtener la lista de carriers, carrier services, warehouses y projects
     useEffect(() => {
         const fetchData = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("No access token found, redirecting to login.");
+                window.location.href = "/";
+                return;
+            }
+
             try {
+                const headers = { Authorization: `Bearer ${token}` };
+
                 const [carriersRes, servicesRes, warehousesRes, projectsRes] = await Promise.all([
-                    API.get("/carriers/"),
-                    API.get("/carrier-services/"),
-                    API.get("/warehouses/"),
-                    API.get("/projects/")
+                    API.get("/carriers/", { headers }),
+                    API.get("/carrier-services/", { headers }),
+                    API.get("/warehouses/", { headers }),
+                    API.get("/projects/", { headers })
                 ]);
+
                 setCarriers(carriersRes.data);
                 setCarrierServices(servicesRes.data);
                 setWarehouses(warehousesRes.data);

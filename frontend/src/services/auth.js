@@ -4,11 +4,15 @@ import { jwtDecode } from "jwt-decode";
 export const login = async (email, password) => {
     const response = await API.post("/token/", { email, password });
 
-    const token = response.data.access;
-    localStorage.setItem("token", token);
+    // Store both access and refresh tokens
+    const accessToken = response.data.access;
+    const refreshToken = response.data.refresh;
 
-    // Decodificar el token para obtener el usuario autenticado
-    const user = jwtDecode(token);
+    localStorage.setItem("token", accessToken);        // Store access token
+    localStorage.setItem("refresh_token", refreshToken); // Store refresh token
+
+    // Decodificar el access token para obtener el usuario autenticado
+    const user = jwtDecode(accessToken);
     localStorage.setItem("user", JSON.stringify(user));
 
     return response.data;
@@ -16,6 +20,7 @@ export const login = async (email, password) => {
 
 export const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token"); // Clear refresh token on logout as well
     localStorage.removeItem("user");
     window.location.href = "/";
 };
@@ -26,5 +31,5 @@ export const getUser = () => {
 };
 
 export const isAuthenticated = () => {
-    return localStorage.getItem("token") !== null;
+    return localStorage.getItem("token") !== null && localStorage.getItem("refresh_token") !== null;
 };
