@@ -88,10 +88,13 @@ function OrderForm() {
     };
 
     const handleLineChange = (index, e) => {
+        const { name, value } = e.target;
         const newLines = [...formData.lines];
-        newLines[index][e.target.name] = e.target.value;
+    
+        newLines[index][name] = value;
+
         setFormData({ ...formData, lines: newLines });
-    };
+    };    
 
     const addLine = () => {
         setFormData({ ...formData, lines: [...formData.lines, { material: "", quantity: "" }] });
@@ -168,7 +171,7 @@ function OrderForm() {
                         <select name="material" value={line.material} onChange={(e) => handleLineChange(index, e)} required>
                             <option value="">Select Material</option>
                             {materials.map(material => (
-                                <option key={material.id} value={material.id}>{material.material_name}</option>
+                                <option key={material.id} value={material.material}>{material.material_name}</option>
                             ))}
                         </select>
 
