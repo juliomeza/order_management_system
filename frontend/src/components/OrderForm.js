@@ -10,6 +10,7 @@ function OrderForm() {
     const [warehouses, setWarehouses] = useState([]);
     const [projects, setProjects] = useState([]);
     const [materials, setMaterials] = useState([]);
+    const [contacts, setContacts] = useState([]);
 
     const [formData, setFormData] = useState({
         lookup_code_order: "",
@@ -29,6 +30,7 @@ function OrderForm() {
         lines: [{ material: "", quantity: "" }]
     });
 
+    {/* Fetch Project Warehouse Carrier and CarrierService from API */}
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("token");
@@ -60,6 +62,7 @@ function OrderForm() {
         fetchData();
     }, []);
 
+    {/* Fetch Inventory from API */}
     useEffect(() => {
         const fetchMaterials = async () => {
             try {
@@ -82,6 +85,30 @@ function OrderForm() {
     
         fetchMaterials();
     }, []);
+
+    {/* Fetch Contacts from API */}
+    useEffect(() => {
+        const fetchContacts = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    console.error("No access token found, redirecting to login.");
+                    window.location.href = "/";
+                    return;
+                }
+    
+                const response = await API.get("/contacts/list/", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+    
+                setContacts(response.data.results || []);
+            } catch (error) {
+                console.error("Error fetching contacts:", error);
+            }
+        };
+    
+        fetchContacts();
+    }, []);    
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -141,7 +168,16 @@ function OrderForm() {
                     ))}
                 </select>
 
-                <input type="number" name="contact" placeholder="Contact" value={formData.contact} onChange={handleChange} required />
+                {/* Dropdown para Contact */}
+                <select name="contact" value={formData.contact} onChange={handleChange} required>
+                    <option value="">Select Contact</option>
+                    {contacts.map(contact => (
+                        <option key={contact.id} value={contact.id}>
+                            {contact.first_name} {contact.last_name}
+                        </option>
+                    ))}
+                </select>
+
                 <input type="number" name="shipping_address" placeholder="Shipping Address" value={formData.shipping_address} onChange={handleChange} required />
                 <input type="number" name="billing_address" placeholder="Billing Address" value={formData.billing_address} onChange={handleChange} required />
 
