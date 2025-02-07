@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createOrder } from "../services/orders";
 import { useNavigate } from "react-router-dom";
-import API from "../api";
+import API from "../services/api";
 
 function OrderForm() {
     const navigate = useNavigate();
