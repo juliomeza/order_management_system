@@ -10,6 +10,7 @@ const API = axios.create({
 // Variable para controlar si hay un refresh en proceso
 let isRefreshing = false;
 let failedQueue = [];
+let showSessionExpiredModal = false;
 
 const processQueue = (error, token = null) => {
     failedQueue.forEach(prom => {
@@ -38,14 +39,12 @@ API.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Si el error es 401 y no es un retry y no es la ruta de refresh
         if (
             error.response?.status === 401 && 
             !originalRequest._retry &&
             !originalRequest.url?.includes('token/refresh')
         ) {
             if (isRefreshing) {
-                // Si ya hay un refresh en proceso, agregar esta petición a la cola
                 try {
                     const token = await new Promise((resolve, reject) => {
                         failedQueue.push({ resolve, reject });
@@ -66,7 +65,6 @@ API.interceptors.response.use(
                     throw new Error("No refresh token available");
                 }
 
-                // Intentar refrescar el token
                 const refreshResponse = await axios.post(
                     `${process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000"}/token/refresh/`,
                     { refresh: refreshToken }
@@ -75,24 +73,21 @@ API.interceptors.response.use(
                 const newToken = refreshResponse.data.access;
                 const newRefreshToken = refreshResponse.data.refresh;
                 
-                // Guardar ambos tokens
                 localStorage.setItem("token", newToken);
                 localStorage.setItem("refresh_token", newRefreshToken);
                 
-                // Actualizar el header de la petición original
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                
-                // Procesar la cola de peticiones fallidas
                 processQueue(null, newToken);
                 
                 return API(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
-                
-                // Limpiar almacenamiento y redirigir al login
-                localStorage.clear();
-                window.location.href = "/";
-                
+
+                if (!showSessionExpiredModal) {
+                    showSessionExpiredModal = true;
+                    showModalAndRedirect();
+                }
+
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
@@ -102,5 +97,42 @@ API.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+function showModalAndRedirect() {
+    const modal = document.createElement("div");
+    modal.style.position = "fixed";
+    modal.style.top = "0";
+    modal.style.left = "0";
+    modal.style.width = "100%";
+    modal.style.height = "100%";
+    modal.style.background = "rgba(0,0,0,0.5)";
+    modal.style.display = "flex";
+    modal.style.justifyContent = "center";
+    modal.style.alignItems = "center";
+    modal.style.zIndex = "1000";
+
+    const modalContent = document.createElement("div");
+    modalContent.style.background = "white";
+    modalContent.style.padding = "20px";
+    modalContent.style.borderRadius = "8px";
+    modalContent.style.textAlign = "center";
+
+    const message = document.createElement("p");
+    message.innerText = "Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.";
+
+    const button = document.createElement("button");
+    button.innerText = "OK";
+    button.style.marginTop = "10px";
+    button.onclick = () => {
+        modal.remove();
+        localStorage.clear();
+        window.location.href = "/";
+    };
+
+    modalContent.appendChild(message);
+    modalContent.appendChild(button);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
 
 export default API;
