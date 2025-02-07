@@ -3,10 +3,10 @@ import Login from "./components/Login";
 import OrderList from "./components/OrderList";
 import OrderForm from "./components/OrderForm";
 import PrivateRoute from "./components/PrivateRoute";
-import { useAuth } from "./hooks/useAuth"; // ✅ Nueva importación
+import { useAuth } from "./hooks/useAuth";
 
 function App() {
-    const { user, handleLogout } = useAuth(); // ✅ Ahora usamos el hook
+    const { user, handleLogout } = useAuth();
 
     return (
         <Router>

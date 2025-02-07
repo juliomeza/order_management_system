@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-function Login() { // Eliminamos el prop `setUser` porque ahora lo maneja el hook
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { handleLogin } = useAuth(); // Obtenemos la función desde el hook
+  const { handleLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

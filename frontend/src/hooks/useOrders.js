@@ -20,7 +20,7 @@ export function useOrders() {
     const addOrder = async (orderData) => {
         try {
             await createOrder(orderData);
-            fetchOrders(); // Refresca la lista de órdenes después de crear una nueva
+            fetchOrders();
         } catch (error) {
             console.error("Error creating order:", error);
         }

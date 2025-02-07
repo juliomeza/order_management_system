@@ -3,7 +3,7 @@ import { useOrders } from "../hooks/useOrders";
 import { Link } from "react-router-dom";
 
 function OrderList() {
-    const { orders } = useOrders(); // Ahora usa el hook en lugar de llamar directamente a orderService
+    const { orders } = useOrders();
 
     return (
         <div>
