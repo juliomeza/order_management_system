@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { getOrders } from "../services/orderService";
+import React from "react";
+import { useOrders } from "../hooks/useOrders";
 import { Link } from "react-router-dom";
 
 function OrderList() {
-    const [orders, setOrders] = useState([]);
-
-    useEffect(() => {
-        getOrders().then(setOrders).catch(console.error);
-    }, []);
+    const { orders } = useOrders(); // Ahora usa el hook en lugar de llamar directamente a orderService
 
     return (
         <div>
