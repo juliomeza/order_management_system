@@ -2,17 +2,11 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import Login from "./components/Login";
 import OrderList from "./components/OrderList";
 import OrderForm from "./components/OrderForm";
-import { isAuthenticated, getUser, logout } from "./services/authService";
-import { useState } from "react";
 import PrivateRoute from "./components/PrivateRoute";
+import { useAuth } from "./hooks/useAuth"; // ✅ Nueva importación
 
 function App() {
-    const [user, setUser] = useState(getUser());
-
-    const handleLogout = () => {
-        logout();
-        setUser(null);
-    };
+    const { user, handleLogout } = useAuth(); // ✅ Ahora usamos el hook
 
     return (
         <Router>
@@ -30,9 +24,7 @@ function App() {
                 <Route 
                     path="/" 
                     element={
-                        isAuthenticated() ? 
-                        <Navigate to="/orders" replace /> : 
-                        <Login setUser={setUser} />
+                        user ? <Navigate to="/orders" replace /> : <Login />
                     } 
                 />
                 <Route path="/orders" element={<PrivateRoute element={<OrderList />} />} />

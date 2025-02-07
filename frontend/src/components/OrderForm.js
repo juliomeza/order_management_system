@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { createOrder } from "../services/orderService";
+import { useOrders } from "../hooks/useOrders";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function OrderForm() {
     const navigate = useNavigate();
+    const { addOrder } = useOrders();
     const [carriers, setCarriers] = useState([]);
     const [carrierServices, setCarrierServices] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
@@ -169,12 +170,8 @@ function OrderForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await createOrder(formData);
-            navigate("/orders"); // Redirigir a la lista de órdenes
-        } catch (error) {
-            console.error("Error creando la orden:", error);
-        }
+        addOrder(formData);
+        navigate("/orders");
     };
 
     return (
