@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createOrder } from "../services/orders";
+import { createOrder } from "../services/orderService";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 

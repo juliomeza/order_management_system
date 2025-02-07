@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getOrders } from "../services/orders";
+import { getOrders } from "../services/orderService";
 import { Link } from "react-router-dom";
 
 function OrderList() {

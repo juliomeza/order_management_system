@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import Login from "./components/Login";
 import OrderList from "./components/OrderList";
 import OrderForm from "./components/OrderForm";
-import { isAuthenticated, getUser, logout } from "./services/auth";
+import { isAuthenticated, getUser, logout } from "./services/authService";
 import { useState } from "react";
 
 function PrivateRoute({ element }) {
