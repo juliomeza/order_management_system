@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import OrderList from "./components/OrderList";
-import OrderForm from "./components/OrderForm";
+import OrderForm from "./components/orders/OrderForm";
 import PrivateRoute from "./components/PrivateRoute";
 import { useAuth } from "./hooks/useAuth";
 
