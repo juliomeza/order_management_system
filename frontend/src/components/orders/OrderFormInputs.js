@@ -8,6 +8,7 @@ function OrderFormInputs({ formData, handleChange }) {
             <input type="number" name="status" placeholder="Status" value={formData.status} onChange={handleChange} required />
             <input type="number" name="order_type" placeholder="Order Type" value={formData.order_type} onChange={handleChange} required />
             <input type="number" name="order_class" placeholder="Order Class" value={formData.order_class} onChange={handleChange} required />
+            <input type="date" name="expected_delivery_date" value={formData.expected_delivery_date} onChange={handleChange} required />
         </>
     );
 }
