@@ -4,11 +4,7 @@ import OrderList from "./components/OrderList";
 import OrderForm from "./components/OrderForm";
 import { isAuthenticated, getUser, logout } from "./services/authService";
 import { useState } from "react";
-
-function PrivateRoute({ element }) {
-    const auth = isAuthenticated();
-    return auth ? element : <Navigate to="/" replace />;
-}
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
     const [user, setUser] = useState(getUser());
