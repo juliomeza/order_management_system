@@ -28,7 +28,7 @@ export const login = async (email, password) => {
 
 export const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("refresh_token"); // Clear refresh token on logout as well
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     window.location.href = "/";
 };
