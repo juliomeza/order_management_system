@@ -1,18 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, } from "react";
 import { isAuthenticated, getUser, login, logout } from "../services/authService";
 
 export function useAuth() {
-    const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Simula la carga del usuario desde el almacenamiento
-        const storedUser = getUser();
-        if (storedUser) {
-            setUser(storedUser);
-        }
-        setIsLoading(false);
-    }, []);
+    const [user, setUser] = useState(getUser() || {});
+    const [isLoading] = useState(false);
 
     const handleLogin = async (email, password) => {
         try {
@@ -31,3 +22,4 @@ export function useAuth() {
 
     return { user, isAuthenticated, isLoading, handleLogin, handleLogout };
 }
+

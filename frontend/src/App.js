@@ -11,23 +11,21 @@ function App() {
     return (
         <Router>
             <div>
-                {user && (
-                    <div>
-                        <p>Welcome, {user.first_name}</p>
-                        <button onClick={handleLogout}>
-                            Logout
-                        </button>
-                    </div>
-                )}
+            {user && user.email && (
+                <div>
+                    <p>Welcome, {user.email}</p>
+                    <button onClick={handleLogout}>Logout</button>
+                </div>
+            )}
             </div>
             <Routes>
-                <Route 
-                    path="/" 
-                    element={
-                        user ? <Navigate to="/orders" replace /> : <Login />
-                    } 
-                />
-                <Route path="/orders" element={<PrivateRoute element={<OrderList />} />} />
+            <Route 
+                path="/" 
+                element={
+                    user && user.email ? <Navigate to="/orders" replace /> : <Login />
+                } 
+            />
+                            <Route path="/orders" element={<PrivateRoute element={<OrderList />} />} />
                 <Route path="/create-order" element={<PrivateRoute element={<OrderForm />} />} />
             </Routes>
         </Router>

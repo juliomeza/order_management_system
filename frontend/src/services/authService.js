@@ -1,26 +1,22 @@
 import API from "./api";
 
 export const login = async (email, password) => {
-    const response = await API.post("/token/", { email, password });
-
-    // Guardar tokens en localStorage
-    const accessToken = response.data.access;
-    const refreshToken = response.data.refresh;
-
-    localStorage.setItem("token", accessToken);
-    localStorage.setItem("refresh_token", refreshToken);
-
     try {
-        // Obtener los datos del usuario autenticado
-        const userResponse = await API.get(`/users/me/`);
-        const user = userResponse.data;
-        
-        // Guardar solo el first_name en localStorage
-        localStorage.setItem("user", JSON.stringify({ first_name: user.first_name }));
+        const response = await API.post("/token/", { email, password });
+
+        const accessToken = response.data.access;
+        const refreshToken = response.data.refresh;
+
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("refresh_token", refreshToken);
+
+        // Crear un usuario mínimo basado en el email ingresado
+        const user = { email };
+        localStorage.setItem("user", JSON.stringify(user));
 
         return { user, accessToken };
     } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Login error:", error);
         throw error;
     }
 };
@@ -35,9 +31,10 @@ export const logout = () => {
 
 export const getUser = () => {
     const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    return user ? JSON.parse(user) : {};
 };
 
 export const isAuthenticated = () => {
     return localStorage.getItem("token") !== null && localStorage.getItem("refresh_token") !== null;
 };
+
