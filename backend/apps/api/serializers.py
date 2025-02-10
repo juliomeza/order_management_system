@@ -18,13 +18,15 @@ class OrderLineSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     lines = OrderLineSerializer(many=True, required=True)
+    created_by_user = serializers.ReadOnlyField(source="created_by_user.id")
 
     class Meta:
         model = Order
         fields = ['lookup_code_order', 'lookup_code_shipment', 'status', 
                  'order_type', 'order_class', 'project', 'warehouse', 
                  'contact', 'shipping_address', 'billing_address', 'carrier', 
-                 'service_type', 'expected_delivery_date', 'notes', 'lines']
+                 'service_type', 'expected_delivery_date', 'notes', 'lines',
+                 'created_by_user']
     
     def validate(self, data):
         user = self.context['request'].user  # Get authenticated user
@@ -84,8 +86,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         lines_data = validated_data.pop('lines')
+        user = self.context['request'].user
         with transaction.atomic():
-            order = Order.objects.create(**validated_data)
+            order = Order.objects.create(created_by_user=user, **validated_data)
             for line_data in lines_data:
                 OrderLine.objects.create(order=order, **line_data)
             logger.info(f"Order created successfully: {order.lookup_code_order} with {len(lines_data)} lines.")
