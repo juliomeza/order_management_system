@@ -5,9 +5,9 @@ export function useOrderFormData() {
     const [formData, setFormData] = useState({
         lookup_code_order: "",
         lookup_code_shipment: "",
-        status: "",
-        order_type: "",
-        order_class: "",
+        status: "3", // Created
+        order_type: "2", // Outbound
+        order_class: "1", // Sales Orders
         project: "",
         warehouse: "",
         contact: "",
@@ -46,8 +46,8 @@ export function useOrderFormData() {
                     API.get("/carrier-services/", { headers }),
                     API.get("/warehouses/", { headers }),
                     API.get("/projects/", { headers }),
-                    API.get("/inventory/list/", { headers }), // Materials
-                    API.get("/contacts/list/", { headers })  // Contacts
+                    API.get("/inventory/list/", { headers }),
+                    API.get("/contacts/list/", { headers })
                 ]);
 
                 setCarriers(carriersRes.data);

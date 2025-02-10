@@ -15,7 +15,7 @@ function Login() {
     if (success) {
       navigate("/orders", { replace: true });
     } else {
-      setError("Credenciales incorrectas");
+      setError("Invalid credentials");
     }
   };
 
