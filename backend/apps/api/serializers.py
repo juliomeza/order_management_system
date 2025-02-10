@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from apps.orders.models import Order, OrderLine
 from apps.customers.models import Project
 from apps.logistics.models import Warehouse, Contact, Address, Carrier, CarrierService
@@ -8,6 +9,22 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 
 logger = logging.getLogger('custom_logger')
+
+User = get_user_model()
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Agregar datos del usuario a la respuesta del login
+        data["user"] = {
+            "id": self.user.id,
+            "email": self.user.email,
+            "first_name": self.user.first_name,
+            "last_name": self.user.last_name,
+        }
+        
+        return data
 
 # Create a new order with order lines
 class OrderLineSerializer(serializers.ModelSerializer):

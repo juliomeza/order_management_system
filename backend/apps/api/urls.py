@@ -17,6 +17,7 @@ from .views import (
     get_carriers,
     get_carrier_services,
     UserDetailView,
+    CustomTokenObtainPairView,
 )
 
 # Configuración de Swagger
@@ -39,7 +40,7 @@ urlpatterns = [
     path('orders/', get_or_create_orders, name="get-orders"),
 
     # Auth endpoints
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
 

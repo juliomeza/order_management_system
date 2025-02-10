@@ -6,12 +6,10 @@ export const login = async (email, password) => {
 
         const accessToken = response.data.access;
         const refreshToken = response.data.refresh;
+        const user = response.data.user;
 
         localStorage.setItem("token", accessToken);
         localStorage.setItem("refresh_token", refreshToken);
-
-        // Crear un usuario mínimo basado en el email ingresado
-        const user = { email };
         localStorage.setItem("user", JSON.stringify(user));
 
         return { user, accessToken };

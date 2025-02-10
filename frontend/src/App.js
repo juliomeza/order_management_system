@@ -1,32 +1,20 @@
-import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import OrderList from "./components/OrderList";
 import OrderForm from "./components/orders/OrderForm";
 import PrivateRoute from "./components/PrivateRoute";
 import { useAuth } from "./hooks/useAuth";
-import { getUserProfile } from "./services/userService";
 
 function App() {
     const { user, handleLogout } = useAuth();
-    const [userData, setUserData] = useState(null);
-
-    useEffect(() => {
-        if (user && user.email) {
-            getUserProfile().then(data => {
-                if (data) {
-                    setUserData(data);
-                }
-            });
-        }
-    }, [user]);
 
     return (
         <Router>
             <div>
-                {user && user.email && userData?.first_name && (
+                {/* 🔹 Ahora usamos directamente `user.first_name` en lugar de `userData` */}
+                {user && user.email && (
                     <div>
-                        <p>Welcome, {userData.first_name}</p>
+                        <p>Welcome, {user.first_name || "User"}</p> {/* 🔹 Si `first_name` es null, mostramos "User" */}
                         <button onClick={handleLogout}>Logout</button>
                     </div>
                 )}

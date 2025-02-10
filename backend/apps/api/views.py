@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, status
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
@@ -25,6 +26,7 @@ from .serializers import (
     CarrierSerializer,
     CarrierServiceSerializer,
     UserSerializer,
+    CustomTokenObtainPairSerializer,
 )
 
 # Core Utilities
@@ -193,3 +195,7 @@ class UserDetailView(APIView):
         """Devuelve los datos del usuario autenticado"""
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+### ✅ 8. Custom Login para incluir first_name en /token/
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
