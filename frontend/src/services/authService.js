@@ -8,9 +8,9 @@ export const login = async (email, password) => {
         const refreshToken = response.data.refresh;
         const user = response.data.user;
 
-        localStorage.setItem("token", accessToken);
-        localStorage.setItem("refresh_token", refreshToken);
-        localStorage.setItem("user", JSON.stringify(user));
+        sessionStorage.setItem("token", accessToken);  // 🔹 Cambiar a sessionStorage
+        sessionStorage.setItem("refresh_token", refreshToken);  // 🔹 Cambiar a sessionStorage
+        localStorage.setItem("user", JSON.stringify(user));  // 🔹 User se queda en localStorage
 
         return { user, accessToken };
     } catch (error) {
@@ -19,10 +19,9 @@ export const login = async (email, password) => {
     }
 };
 
-
 export const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refresh_token");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     window.location.href = "/";
 };
@@ -33,6 +32,5 @@ export const getUser = () => {
 };
 
 export const isAuthenticated = () => {
-    return localStorage.getItem("token") !== null && localStorage.getItem("refresh_token") !== null;
+    return sessionStorage.getItem("token") !== null && sessionStorage.getItem("refresh_token") !== null;
 };
-
