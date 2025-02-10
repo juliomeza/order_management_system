@@ -25,7 +25,6 @@ from .serializers import (
     WarehouseSerializer,
     CarrierSerializer,
     CarrierServiceSerializer,
-    UserSerializer,
     CustomTokenObtainPairSerializer,
 )
 
@@ -185,17 +184,8 @@ def get_carrier_services(request):
     serializer = CarrierServiceSerializer(carrier_services, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-### ✅ 7. API para User
-User = get_user_model()
 
-class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        """Devuelve los datos del usuario autenticado"""
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-
-### ✅ 8. Custom Login para incluir first_name en /token/
+### ✅ 7. Custom Login para incluir first_name en /token/
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
