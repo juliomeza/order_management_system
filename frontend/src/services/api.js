@@ -8,7 +8,6 @@ const API = axios.create({
 });
 
 // Variable para controlar si hay un refresh en proceso
-let isRefreshing = false;
 let failedQueue = [];
 let showSessionExpiredModal = false;
 
@@ -38,33 +37,17 @@ API.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const refreshToken = localStorage.getItem("refresh_token");
 
         if (
-            error.response?.status === 401 && 
+            error.response?.status === 401 &&
             !originalRequest._retry &&
+            refreshToken &&  
             !originalRequest.url?.includes('token/refresh')
         ) {
-            if (isRefreshing) {
-                try {
-                    const token = await new Promise((resolve, reject) => {
-                        failedQueue.push({ resolve, reject });
-                    });
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
-                    return API(originalRequest);
-                } catch (err) {
-                    return Promise.reject(err);
-                }
-            }
-
             originalRequest._retry = true;
-            isRefreshing = true;
 
             try {
-                const refreshToken = localStorage.getItem("refresh_token");
-                if (!refreshToken) {
-                    throw new Error("No refresh token available");
-                }
-
                 const refreshResponse = await axios.post(
                     `${process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000"}/token/refresh/`,
                     { refresh: refreshToken }
@@ -89,14 +72,13 @@ API.interceptors.response.use(
                 }
 
                 return Promise.reject(refreshError);
-            } finally {
-                isRefreshing = false;
             }
         }
 
         return Promise.reject(error);
     }
 );
+
 
 function showModalAndRedirect() {
     const modal = document.createElement("div");

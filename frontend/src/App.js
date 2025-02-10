@@ -6,15 +6,18 @@ import PrivateRoute from "./components/PrivateRoute";
 import { useAuth } from "./hooks/useAuth";
 
 function App() {
-    const { user, handleLogout } = useAuth();
+    const { user, isLoading, handleLogout } = useAuth();
+
+    if (isLoading) {
+        return <p>Loading...</p>;  // 🔹 Mostramos un mensaje mientras se carga la sesión
+    }
 
     return (
         <Router>
             <div>
-                {/* 🔹 Ahora usamos directamente `user.first_name` en lugar de `userData` */}
                 {user && user.email && (
                     <div>
-                        <p>Welcome, {user.first_name || "User"}</p> {/* 🔹 Si `first_name` es null, mostramos "User" */}
+                        <p>Welcome, {user.first_name || "User"}</p>
                         <button onClick={handleLogout}>Logout</button>
                     </div>
                 )}
