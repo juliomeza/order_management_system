@@ -4,7 +4,7 @@ import { useOrderFormData } from "../../hooks/useOrderFormData";
 import { useNavigate } from "react-router-dom";
 import OrderFormInputs from "./OrderFormInputs";
 import OrderFormDropdowns from "./OrderFormDropdowns";
-import OrderLines from "./OrderLines";
+import OrderFormLines from "./OrderFormLines";
 
 function OrderForm() {
     const navigate = useNavigate();
@@ -33,7 +33,7 @@ function OrderForm() {
                     shippingAddresses={shippingAddresses}
                     billingAddresses={billingAddresses}
                 />
-                <OrderLines formData={formData} materials={materials} handleLineChange={handleLineChange} addLine={addLine} removeLine={removeLine} />
+                <OrderFormLines formData={formData} materials={materials} handleLineChange={handleLineChange} addLine={addLine} removeLine={removeLine} />
                 <button type="submit">Submit</button>
             </form>
         </div>

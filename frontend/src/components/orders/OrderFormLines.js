@@ -1,6 +1,6 @@
 import React from "react";
 
-function OrderLines({ formData, materials, handleLineChange, addLine, removeLine }) {
+function OrderFormLines({ formData, materials, handleLineChange, addLine, removeLine }) {
     return (
         <div>
             <h4>Order Lines</h4>
@@ -19,4 +19,4 @@ function OrderLines({ formData, materials, handleLineChange, addLine, removeLine
     );
 }
 
-export default OrderLines;
+export default OrderFormLines;
