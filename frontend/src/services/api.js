@@ -107,7 +107,7 @@ function showModalAndRedirect() {
     button.style.marginTop = "10px";
     button.onclick = () => {
         modal.remove();
-        localStorage.clear();
+        sessionStorage.clear();
         window.location.href = "/";
     };
 

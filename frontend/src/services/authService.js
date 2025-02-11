@@ -8,9 +8,9 @@ export const login = async (email, password) => {
         const refreshToken = response.data.refresh;
         const user = response.data.user;
 
-        sessionStorage.setItem("token", accessToken);  // 🔹 Cambiar a sessionStorage
-        sessionStorage.setItem("refresh_token", refreshToken);  // 🔹 Cambiar a sessionStorage
-        localStorage.setItem("user", JSON.stringify(user));  // 🔹 User se queda en localStorage
+        sessionStorage.setItem("token", accessToken);
+        sessionStorage.setItem("refresh_token", refreshToken);
+        sessionStorage.setItem("user", JSON.stringify(user));
 
         return { user, accessToken };
     } catch (error) {
@@ -22,12 +22,12 @@ export const login = async (email, password) => {
 export const logout = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
     window.location.href = "/";
 };
 
 export const getUser = () => {
-    const user = localStorage.getItem("user");
+    const user = sessionStorage.getItem("user");
     return user ? JSON.parse(user) : null;
 };
 

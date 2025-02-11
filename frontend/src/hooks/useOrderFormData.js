@@ -8,7 +8,6 @@ export function useOrderFormData() {
         status: "3", // Created
         order_type: "2", // Outbound
         order_class: "1", // Sales Orders
-        created_by_user: localStorage.getItem("user_id") || "",
         project: "",
         warehouse: "",
         contact: "",
@@ -33,7 +32,7 @@ export function useOrderFormData() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 if (!token) {
                     console.error("No access token found, redirecting to login.");
                     window.location.href = "/";
