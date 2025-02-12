@@ -100,7 +100,7 @@ function showModalAndRedirect() {
     modalContent.style.textAlign = "center";
 
     const message = document.createElement("p");
-    message.innerText = "Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.";
+    message.innerText = "Your session has expired. Please log in again.";
 
     const button = document.createElement("button");
     button.innerText = "OK";
