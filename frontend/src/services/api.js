@@ -25,7 +25,7 @@ const processQueue = (error, token = null) => {
 
 // Agregar token en cada solicitud
 API.interceptors.request.use(config => {
-    const token = sessionStorage.getItem("token");  // 🔹 Cambiar a sessionStorage
+    const token = sessionStorage.getItem("token");
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +37,7 @@ API.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
-        const refreshToken = sessionStorage.getItem("refresh_token");  // 🔹 Cambiar a sessionStorage
+        const refreshToken = sessionStorage.getItem("refresh_token");
 
         if (
             error.response?.status === 401 &&
