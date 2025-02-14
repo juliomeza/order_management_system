@@ -3,16 +3,16 @@
 Thumbs.db
 
 # Backend (Django o cualquier framework de servidor)
-backend/venv/
-backend/*.pyc
-backend/__pycache__/
-backend/db.sqlite3
-backend/migrations/
+server/venv/
+server/*.pyc
+server/__pycache__/
+server/db.sqlite3
+server/migrations/
 
 # Frontend (Node.js o frameworks como React/Vue)
-frontend/node_modules/
-frontend/build/
-frontend/dist/
+client/node_modules/
+client/build/
+client/dist/
 
 # Documentación
 docs/*.log
